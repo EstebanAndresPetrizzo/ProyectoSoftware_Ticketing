@@ -1,4 +1,4 @@
-import { getEvents, getSeats } from "./api.js";
+import { getEvents, getSeats, reserveSeat } from "./api.js";
 import { renderEvents, renderSeats } from "./render.js";
 
 async function init() {
@@ -39,3 +39,39 @@ function showEventsView() {
   document.getElementById("events-view").classList.remove("hidden");
   document.getElementById("seats-view").classList.add("hidden");
 }
+
+// detectar click en asientos
+document.getElementById("seats-container").addEventListener("click", async (e) => {
+  if (e.target.classList.contains("seat")) {
+
+    const seatId = e.target.dataset.id;
+    const status = e.target.dataset.status;
+
+    // validar estado y evitar acción si no está disponible
+    if (status == "SOLD") {
+      alert("Asiento no disponible");
+      return;
+    }
+    if (status == "RESERVED") {
+      alert("Otro usuario tomó el asiento");
+      return;
+    }
+
+    // feedback visual de reserva en proceso
+    e.target.classList.add("opacity-50");
+
+    const success = await reserveSeat(seatId);
+
+    // limpiar feedback
+    e.target.classList.remove("opacity-50");
+
+    if (success) {
+      //reservado exitosamente
+      e.target.className = "text-center text-sm p-2 rounded bg-yellow-400";
+      e.target.dataset.status = "RESERVED";
+    } else {
+      // reserva fallida por concurrencia
+      alert("Otro usuario ya tomó el asiento");
+    }
+  }
+});

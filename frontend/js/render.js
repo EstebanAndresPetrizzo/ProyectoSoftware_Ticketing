@@ -36,6 +36,13 @@ export function renderSeats(seats) {
 
     div.innerText = seat.number;
 
+    // DATA ATTRIBUTES para identificar asiento y estado
+    div.dataset.id = seat.id;
+    div.dataset.status = seat.status;
+
+    //esto se usa para agregar la clase de color según el estado del asiento
+    div.classList.add("seat");
+
     container.appendChild(div);
   });
 }

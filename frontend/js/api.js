@@ -31,3 +31,11 @@ function randomStatus() {
   const states = ["AVAILABLE", "RESERVED", "SOLD"];
   return states[Math.floor(Math.random() * states.length)];
 }
+
+export async function reserveSeat(seatId) {
+  // simulamos latencia
+  await new Promise(resolve => setTimeout(resolve, 500));
+
+  // simulamos concurrencia (70% éxito)
+  return Math.random() > 0.3;
+}
