@@ -21,3 +21,34 @@ export function renderEvents(events) {
     container.appendChild(card);
   });
 }
+
+export function renderSeats(seats) {
+  const container = document.getElementById("seats-container");
+  container.innerHTML = "";
+
+  seats.forEach(seat => {
+    const div = document.createElement("div");
+
+    div.className = `
+      text-center text-sm p-2 rounded cursor-pointer
+      ${getSeatColor(seat.status)}
+    `;
+
+    div.innerText = seat.number;
+
+    container.appendChild(div);
+  });
+}
+
+function getSeatColor(status) {
+  switch (status) {
+    case "AVAILABLE":
+      return "bg-green-400";
+    case "RESERVED":
+      return "bg-yellow-400";
+    case "SOLD":
+      return "bg-red-400";
+    default:
+      return "bg-gray-300";
+  }
+}
