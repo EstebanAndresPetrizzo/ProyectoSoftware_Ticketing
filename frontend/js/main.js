@@ -1,6 +1,9 @@
 import { getEvents, getSeats, reserveSeat } from "./api.js";
 import { renderEvents, renderSeats } from "./render.js";
 
+let currentEventId = null;
+
+// INIT
 async function init() {
   const events = await getEvents();
   renderEvents(events);
@@ -8,28 +11,33 @@ async function init() {
 
 init();
 
-// detectar click en botones de eventos
+
+// ==============================
+// EVENTOS → VER ASIENTOS
+// ==============================
 document.getElementById("events-container").addEventListener("click", async (e) => {
   if (e.target.tagName === "BUTTON") {
-    const eventId = e.target.dataset.id;
+    currentEventId = e.target.dataset.id;
 
-    // traer asientos
-    const seats = await getSeats(eventId);
-
-    // renderizar
+    const seats = await getSeats(currentEventId);
     renderSeats(seats);
 
-    // cambiar vista
     showSeatsView();
   }
 });
 
-//funcionalidad del boton volver
+
+// ==============================
+// BOTÓN VOLVER
+// ==============================
 document.getElementById("back-button").addEventListener("click", () => {
   showEventsView();
 });
 
-// para ver asientos y volver a eventos
+
+// ==============================
+// NAVEGACIÓN
+// ==============================
 function showSeatsView() {
   document.getElementById("events-view").classList.add("hidden");
   document.getElementById("seats-view").classList.remove("hidden");
@@ -40,38 +48,88 @@ function showEventsView() {
   document.getElementById("seats-view").classList.add("hidden");
 }
 
-// detectar click en asientos
+
+// ==============================
+// CLICK EN ASIENTOS
+// ==============================
 document.getElementById("seats-container").addEventListener("click", async (e) => {
-  if (e.target.classList.contains("seat")) {
+  const seatElement = e.target.closest(".seat");
 
-    const seatId = e.target.dataset.id;
-    const status = e.target.dataset.status;
+  if (!seatElement) return;
 
-    // validar estado y evitar acción si no está disponible
-    if (status == "SOLD") {
-      alert("Asiento no disponible");
-      return;
+  const seatId = seatElement.dataset.id;
+  const status = seatElement.dataset.status;
+
+  console.log("STATUS REAL:", status);
+
+  // No disponible
+  if (status !== "AVAILABLE") {
+    if (status === "RESERVED") {
+      showSeatMessage(seatElement, "Reservado por otro usuario");
+    } else if (status === "SOLD") {
+      showSeatMessage(seatElement, "Vendido");
     }
-    if (status == "RESERVED") {
-      alert("Otro usuario tomó el asiento");
-      return;
-    }
+    return;
+  }
 
-    // feedback visual de reserva en proceso
-    e.target.classList.add("opacity-50");
+  // feedback visual
+  seatElement.classList.add("opacity-50");
 
-    const success = await reserveSeat(seatId);
+  const success = await reserveSeat(seatId);
 
-    // limpiar feedback
-    e.target.classList.remove("opacity-50");
+  seatElement.classList.remove("opacity-50");
 
-    if (success) {
-      //reservado exitosamente
-      e.target.className = "text-center text-sm p-2 rounded bg-yellow-400";
-      e.target.dataset.status = "RESERVED";
-    } else {
-      // reserva fallida por concurrencia
-      alert("Otro usuario ya tomó el asiento");
-    }
+  if (success) {
+    // actualizar color sin romper clases
+    updateSeatColor(seatElement, "RESERVED");
+    seatElement.dataset.status = "RESERVED";
+
+    showSeatMessage(seatElement, "Reservado");
+  } else {
+    // conflicto
+    showSeatMessage(seatElement, "Otro usuario lo tomó");
+
+    //refrescar estado desde backend/mock random
+    const seats = await getSeats(currentEventId);
+    renderSeats(seats);
   }
 });
+
+
+// ==============================
+// UTIL: CAMBIO DE COLOR
+// ==============================
+function updateSeatColor(element, status) {
+  element.classList.remove("bg-green-400", "bg-yellow-400", "bg-red-400");
+
+  if (status === "AVAILABLE") {
+    element.classList.add("bg-green-400");
+  } else if (status === "RESERVED") {
+    element.classList.add("bg-yellow-400");
+  } else if (status === "SOLD") {
+    element.classList.add("bg-red-400");
+  }
+}
+
+
+// ==============================
+// UTIL: MENSAJE SOBRE ASIENTO
+// ==============================
+function showSeatMessage(element, message) {
+  const msg = document.createElement("div");
+
+  msg.innerText = message;
+  msg.className = "absolute bg-black text-white text-xs px-2 py-1 rounded";
+
+  element.style.position = "relative";
+
+  msg.style.top = "-20px";
+  msg.style.left = "50%";
+  msg.style.transform = "translateX(-50%)";
+
+  element.appendChild(msg);
+
+  setTimeout(() => {
+    msg.remove();
+  }, 1000);
+}
