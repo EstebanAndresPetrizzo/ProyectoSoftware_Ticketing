@@ -10,6 +10,6 @@ namespace TicketingAPI.Models
         [System.ComponentModel.DataAnnotations.Timestamp]
         public byte[] Version { get; set; } = null!;
         public Sector Sector { get; set; } = null!;
-        public ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
+        public Reservation? Reservation { get; set; };
     }
 }
