@@ -1,6 +1,7 @@
 import { api } from "./api.js";
 import { renderCatalog, renderStadium, renderSelection } from "./render.js";
 
+// Estado global de la app.
 const state = {
   eventId: null,
   stadium: null,
@@ -12,7 +13,16 @@ const state = {
 
 const $ = (id) => document.getElementById(id);
 
+// Inicializa la app: carga datos y muestra catálogo de eventos.
+// Luego, al seleccionar un evento, muestra el mapa de asientos y permite reservar.
+// La lógica de reserva simula concurrencia con otros usuarios y expiración de reservas.
+// api.js simula backend, render.js tiene funciones de renderizado y main.js maneja la lógica de interacción y estado.
+// se podría usar un framework como React para manejar el estado y renderizado de forma más eficiente, 
+// pero aquí los hacemos con JS puro por simplicidad.
+// El diseño es responsive, con botones claros y feedback visual sobre el estado de cada asiento.
 async function init() {
+  // Cargar datos iniciales (estadio y eventos) y mostrar catálogo. 
+  // primer simulación
   state.stadium = await api.getStadium();
   const events = await api.listEvents();
   renderCatalog($("view-catalog"), events, openEvent);
@@ -20,6 +30,8 @@ async function init() {
   $("btn-buy").addEventListener("click", confirmPurchase);
 }
 
+// Abre la vista de asientos para un evento seleccionado, 
+// carga su estado y comienza el polling para actualizar concurrencia.
 async function openEvent(eventId) {
   state.eventId = eventId;
   state.selected = [];
