@@ -1,135 +1,115 @@
-import { getEvents, getSeats, reserveSeat } from "./api.js";
-import { renderEvents, renderSeats } from "./render.js";
+import { api } from "./api.js";
+import { renderCatalog, renderStadium, renderSelection } from "./render.js";
 
-let currentEventId = null;
+const state = {
+  eventId: null,
+  stadium: null,
+  eventState: null,
+  selected: [], // [{ sectorId, seatId, reservedUntil }]
+  pollTimer: null,
+  countdownTimer: null,
+};
 
-// INIT
+const $ = (id) => document.getElementById(id);
+
 async function init() {
-  const events = await getEvents();
-  renderEvents(events);
+  state.stadium = await api.getStadium();
+  const events = await api.listEvents();
+  renderCatalog($("view-catalog"), events, openEvent);
+  $("btn-back").addEventListener("click", backToCatalog);
+  $("btn-buy").addEventListener("click", confirmPurchase);
+}
+
+async function openEvent(eventId) {
+  state.eventId = eventId;
+  state.selected = [];
+  $("view-catalog").classList.add("hidden");
+  $("view-seats").classList.remove("hidden");
+  const events = await api.listEvents();
+  const evt = events.find(e => e.id === eventId);
+  $("event-title").textContent = evt.title;
+  $("event-meta").textContent = `📅 ${evt.date} · 📍 ${evt.venue}`;
+  await refreshSeats();
+  state.pollTimer = setInterval(refreshSeats, 5000); // sync concurrencia cada 5s
+}
+
+function backToCatalog() {
+  // liberar mis reservas pendientes
+  state.selected.forEach(s => api.releaseSeat(state.eventId, s.sectorId, s.seatId));
+  state.selected = [];
+  clearInterval(state.pollTimer);
+  clearInterval(state.countdownTimer);
+  $("countdown").classList.add("hidden");
+  $("view-seats").classList.add("hidden");
+  $("view-catalog").classList.remove("hidden");
+  updateSelectionUI();
+}
+
+async function refreshSeats() {
+  state.eventState = await api.getSeats(state.eventId);
+  // limpiar selecciones que ya no son mías (TTL expirado o robadas)
+  state.selected = state.selected.filter(sel => {
+    const seat = state.eventState.sectors[sel.sectorId][sel.seatId];
+    return seat.status === "reserved" && seat.owner === "me";
+  });
+  renderStadium($("stadium-map"), state.stadium, state.eventState, state.selected, onSeatClick);
+  updateSelectionUI();
+  updateCountdown();
+}
+
+async function onSeatClick(sectorId, seatId) {
+  const already = state.selected.find(s => s.sectorId === sectorId && s.seatId === seatId);
+  if (already) {
+    await api.releaseSeat(state.eventId, sectorId, seatId);
+    state.selected = state.selected.filter(s => s !== already);
+    await refreshSeats();
+    return;
+  }
+  try {
+    const { reservedUntil } = await api.reserveSeat(state.eventId, sectorId, seatId);
+    state.selected.push({ sectorId, seatId, reservedUntil });
+    await refreshSeats();
+  } catch (err) {
+    alert("⚠️ " + err.message);
+    await refreshSeats();
+  }
+}
+
+function updateSelectionUI() {
+  renderSelection($("selection-list"), $("total"), $("btn-buy"), state.selected, state.stadium);
+}
+
+function updateCountdown() {
+  clearInterval(state.countdownTimer);
+  if (state.selected.length === 0) {
+    $("countdown").classList.add("hidden");
+    return;
+  }
+  $("countdown").classList.remove("hidden");
+  const tick = () => {
+    const earliest = Math.min(...state.selected.map(s => s.reservedUntil));
+    const remaining = Math.max(0, earliest - Date.now());
+    const m = Math.floor(remaining / 60000);
+    const s = Math.floor((remaining % 60000) / 1000);
+    $("countdown-time").textContent = `${m}:${s.toString().padStart(2, "0")}`;
+    if (remaining === 0) refreshSeats();
+  };
+  tick();
+  state.countdownTimer = setInterval(tick, 1000);
+}
+
+async function confirmPurchase() {
+  try {
+    const res = await api.confirmPurchase(state.eventId, state.selected);
+    alert(`✅ ¡Compra confirmada! Ticket: ${res.ticketId}`);
+    state.selected = [];
+    clearInterval(state.countdownTimer);
+    $("countdown").classList.add("hidden");
+    await refreshSeats();
+  } catch (err) {
+    alert("❌ " + err.message);
+    await refreshSeats();
+  }
 }
 
 init();
-
-
-// ==============================
-// EVENTOS → VER ASIENTOS
-// ==============================
-document.getElementById("events-container").addEventListener("click", async (e) => {
-  if (e.target.tagName === "BUTTON") {
-    currentEventId = e.target.dataset.id;
-
-    const seats = await getSeats(currentEventId);
-    renderSeats(seats);
-
-    showSeatsView();
-  }
-});
-
-
-// ==============================
-// BOTÓN VOLVER
-// ==============================
-document.getElementById("back-button").addEventListener("click", () => {
-  showEventsView();
-});
-
-
-// ==============================
-// NAVEGACIÓN
-// ==============================
-function showSeatsView() {
-  document.getElementById("events-view").classList.add("hidden");
-  document.getElementById("seats-view").classList.remove("hidden");
-}
-
-function showEventsView() {
-  document.getElementById("events-view").classList.remove("hidden");
-  document.getElementById("seats-view").classList.add("hidden");
-}
-
-
-// ==============================
-// CLICK EN ASIENTOS
-// ==============================
-document.getElementById("seats-container").addEventListener("click", async (e) => {
-  const seatElement = e.target.closest(".seat");
-
-  if (!seatElement) return;
-
-  const seatId = seatElement.dataset.id;
-  const status = seatElement.dataset.status;
-
-  console.log("STATUS REAL:", status);
-
-  // No disponible
-  if (status !== "AVAILABLE") {
-    if (status === "RESERVED") {
-      showSeatMessage(seatElement, "Reservado por otro usuario");
-    } else if (status === "SOLD") {
-      showSeatMessage(seatElement, "Vendido");
-    }
-    return;
-  }
-
-  // feedback visual
-  seatElement.classList.add("opacity-50");
-
-  const success = await reserveSeat(seatId);
-
-  seatElement.classList.remove("opacity-50");
-
-  if (success) {
-    // actualizar color sin romper clases
-    updateSeatColor(seatElement, "RESERVED");
-    seatElement.dataset.status = "RESERVED";
-
-    showSeatMessage(seatElement, "Reservado");
-  } else {
-    // conflicto
-    showSeatMessage(seatElement, "Otro usuario lo tomó");
-
-    //refrescar estado desde backend/mock random
-    const seats = await getSeats(currentEventId);
-    renderSeats(seats);
-  }
-});
-
-
-// ==============================
-// UTIL: CAMBIO DE COLOR
-// ==============================
-function updateSeatColor(element, status) {
-  element.classList.remove("bg-green-400", "bg-yellow-400", "bg-red-400");
-
-  if (status === "AVAILABLE") {
-    element.classList.add("bg-green-400");
-  } else if (status === "RESERVED") {
-    element.classList.add("bg-yellow-400");
-  } else if (status === "SOLD") {
-    element.classList.add("bg-red-400");
-  }
-}
-
-
-// ==============================
-// UTIL: MENSAJE SOBRE ASIENTO
-// ==============================
-function showSeatMessage(element, message) {
-  const msg = document.createElement("div");
-
-  msg.innerText = message;
-  msg.className = "absolute bg-black text-white text-xs px-2 py-1 rounded";
-
-  element.style.position = "relative";
-
-  msg.style.top = "-20px";
-  msg.style.left = "50%";
-  msg.style.transform = "translateX(-50%)";
-
-  element.appendChild(msg);
-
-  setTimeout(() => {
-    msg.remove();
-  }, 1000);
-}
