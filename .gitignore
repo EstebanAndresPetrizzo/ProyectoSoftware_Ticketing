@@ -1,0 +1,14 @@
+# Backend .NET
+backend/**/bin/
+backend/**/obj/
+backend/**/packages/
+backend/**/.vs/
+
+# Base de Datos 
+backend/**/appsettings.Development.json
+.env
+
+#Visual Studio / VS Code 
+.vscode/
+.vs/
+*.user
