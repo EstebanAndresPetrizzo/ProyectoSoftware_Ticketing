@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using TicketingAPI.Data;
-var builder = WebApplication.CreateBuilder(args);
 
+var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Generador nativo de .NET 10
 builder.Services.AddOpenApi();
@@ -9,6 +9,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
+
 // CORS
 builder.Services.AddCors(options =>
 {
@@ -21,7 +22,6 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
-
 if (app.Environment.IsDevelopment())
 {
     // .NET 10 genera el JSON en /openapi/v1.json
@@ -37,5 +37,10 @@ if (app.Environment.IsDevelopment())
 app.UseCors("AllowFrontend");
 app.UseAuthorization();
 app.MapControllers();
-
+// Ejecutar seed al arrancar
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    DbSeeder.Seed(db);
+}
 app.Run();
