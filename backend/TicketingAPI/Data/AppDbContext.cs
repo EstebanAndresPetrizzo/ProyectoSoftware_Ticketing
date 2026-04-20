@@ -46,7 +46,11 @@ namespace TicketingAPI.Data
                 entity.HasKey(s => s.Id);
                 entity.Property(s => s.RowIdentifier).IsRequired().HasMaxLength(10);
                 entity.Property(s => s.Status).IsRequired().HasDefaultValue("Available");
-                entity.Property(s => s.Version).IsRowVersion();
+                // control de concurrencia
+                entity.Property(s => s.Version)
+                      .HasColumnName("xmin")
+                      .HasColumnType("xid")
+                      .IsRowVersion();
 
                 entity.HasOne(s => s.Sector)
                       .WithMany(sec => sec.Seats)
