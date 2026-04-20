@@ -1,0 +1,102 @@
+using Microsoft.EntityFrameworkCore;
+using TicketingAPI.Models;
+
+namespace TicketingAPI.Data
+{
+    public class AppDbContext : DbContext
+    {
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+
+        public DbSet<Event> Events { get; set; }
+        public DbSet<Sector> Sectors { get; set; }
+        public DbSet<Seat> Seats { get; set; }
+        public DbSet<User> Users { get; set; }
+        public DbSet<Reservation> Reservations { get; set; }
+        public DbSet<AuditLog> AuditLogs { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            // Event
+            modelBuilder.Entity<Event>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.Venue).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.Status).IsRequired().HasDefaultValue("Active");
+            });
+
+            // Sector
+            modelBuilder.Entity<Sector>(entity =>
+            {
+                entity.HasKey(s => s.Id);
+                entity.Property(s => s.Name).IsRequired().HasMaxLength(100);
+                entity.Property(s => s.Price).HasColumnType("decimal(10,2)");
+
+                entity.HasOne(s => s.Event)
+                      .WithMany(e => e.Sectors)
+                      .HasForeignKey(s => s.EventId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Seat
+            modelBuilder.Entity<Seat>(entity =>
+            {
+                entity.HasKey(s => s.Id);
+                entity.Property(s => s.RowIdentifier).IsRequired().HasMaxLength(10);
+                entity.Property(s => s.Status).IsRequired().HasDefaultValue("Available");
+                entity.Property(s => s.Version).IsRowVersion();
+
+                entity.HasOne(s => s.Sector)
+                      .WithMany(sec => sec.Seats)
+                      .HasForeignKey(s => s.SectorId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // User
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.HasKey(u => u.Id);
+                entity.Property(u => u.Name).IsRequired().HasMaxLength(100);
+                entity.Property(u => u.Email).IsRequired().HasMaxLength(150);
+                entity.HasIndex(u => u.Email).IsUnique();
+            });
+
+            // Reservation
+            modelBuilder.Entity<Reservation>(entity =>
+            {
+                entity.HasKey(r => r.Id);
+                entity.Property(r => r.Status).IsRequired().HasDefaultValue("Pending");
+
+                // Relación Reservation → User 
+                entity.HasOne(r => r.User)
+                      .WithMany(u => u.Reservations)
+                      .HasForeignKey(r => r.UserId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                // Relación Seat → Reservation
+                entity.HasOne(r => r.Seat)
+                      .WithOne(s => s.Reservation)
+                      .HasForeignKey<Reservation>(r => r.SeatId)
+                      .IsRequired(false)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // AuditLog
+            modelBuilder.Entity<AuditLog>(entity =>
+            {
+                entity.HasKey(a => a.Id);
+                entity.Property(a => a.Action).IsRequired().HasMaxLength(50);
+                entity.Property(a => a.EntityType).IsRequired().HasMaxLength(50);
+                entity.Property(a => a.EntityId).IsRequired().HasMaxLength(100);
+                entity.Property(a => a.Details).HasColumnType("text");
+
+                entity.HasOne(a => a.User)
+                      .WithMany(u => u.AuditLogs)
+                      .HasForeignKey(a => a.UserId)
+                      .OnDelete(DeleteBehavior.SetNull);
+            });
+        }
+    }
+}
