@@ -97,7 +97,7 @@ namespace TicketingAPI.Migrations
                     RowIdentifier = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
                     SeatNumber = table.Column<int>(type: "integer", nullable: false),
                     Status = table.Column<string>(type: "text", nullable: false, defaultValue: "Available"),
-                    Version = table.Column<byte[]>(type: "bytea", rowVersion: true, nullable: false)
+                    xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
                 },
                 constraints: table =>
                 {

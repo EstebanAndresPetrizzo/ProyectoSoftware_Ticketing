@@ -12,7 +12,7 @@ using TicketingAPI.Data;
 namespace TicketingAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260420010238_InitialCreate")]
+    [Migration("20260420032209_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -152,11 +152,11 @@ namespace TicketingAPI.Migrations
                         .HasColumnType("text")
                         .HasDefaultValue("Available");
 
-                    b.Property<byte[]>("Version")
+                    b.Property<uint>("Version")
                         .IsConcurrencyToken()
-                        .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("bytea");
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
 
                     b.HasKey("Id");
 
