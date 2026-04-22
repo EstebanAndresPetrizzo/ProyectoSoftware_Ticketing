@@ -1,5 +1,5 @@
 // MOCK API con localStorage. Simula backend con TTL de reservas y concurrencia.
-const TTL_MS = 5 * 60 * 1000; // 5 minutos
+const TTL_MS = 1 * 60 * 1000; // 1 minuto
 const STORAGE_KEY = "ticketing_state_v2";
 
 // Configuración del estadio: cuadrado alrededor del escenario.
@@ -10,7 +10,8 @@ const STORAGE_KEY = "ticketing_state_v2";
 //   [NORTE]            ← detrás de la valla
 //   con [OESTE] a la izquierda y [ESTE] a la derecha (laterales)
 //   [SUR]              ← al fondo
-const STADIUM = {
+
+const VENUES = {
   vip:   { name: "VIP",   rows: 2, cols: 14, price: 120, position: "front" },
   norte: { name: "Norte", rows: 5, cols: 14, price: 60,  position: "center" },
   sur:   { name: "Sur",   rows: 5, cols: 14, price: 45,  position: "back" },
@@ -31,7 +32,7 @@ function loadState() {
   const state = { events: {} };
   for (const evt of EVENTS) {
     state.events[evt.id] = { sectors: {} };
-    for (const [sectorId, cfg] of Object.entries(STADIUM)) {
+    for (const [sectorId, cfg] of Object.entries(VENUES)) {
       state.events[evt.id].sectors[sectorId] = {};
       for (let r = 0; r < cfg.rows; r++) {
         for (let c = 0; c < cfg.cols; c++) {
@@ -66,7 +67,7 @@ function expireReservations(state) {
 export const api = {
   async listEvents() { return EVENTS; },
 
-  async getStadium() { return STADIUM; },
+  async getStadium() { return VENUES; },
 
   async getSeats(eventId) {
     const state = loadState();
