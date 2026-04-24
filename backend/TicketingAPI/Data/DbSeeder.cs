@@ -12,6 +12,7 @@ namespace TicketingAPI.Data
             // Usuario de prueba
             var user = new User
             {
+                Id = Guid.Parse("11111111-1111-1111-1111-111111111111"),
                 Name = "Usuario Test",
                 Email = "test@ticketing.com",
                 PasswordHash = "hash_placeholder"
