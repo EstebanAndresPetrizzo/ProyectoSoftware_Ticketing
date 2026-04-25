@@ -11,6 +11,12 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 );
 
 // CORS
+builder.Services.AddScoped<TicketingAPI.Repositories.IEventRepository, TicketingAPI.Repositories.EventRepository>();
+builder.Services.AddScoped<TicketingAPI.Repositories.ISeatRepository, TicketingAPI.Repositories.SeatRepository>();
+builder.Services.AddScoped<TicketingAPI.Repositories.IReservationRepository, TicketingAPI.Repositories.ReservationRepository>();
+builder.Services.AddScoped<TicketingAPI.Repositories.IAuditLogRepository, TicketingAPI.Repositories.AuditLogRepository>();
+builder.Services.AddScoped<TicketingAPI.Repositories.IUnitOfWork, TicketingAPI.Repositories.UnitOfWork>();
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
