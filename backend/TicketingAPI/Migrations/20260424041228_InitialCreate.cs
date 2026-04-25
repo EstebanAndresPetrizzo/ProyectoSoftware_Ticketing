@@ -51,6 +51,7 @@ namespace TicketingAPI.Migrations
                     EventId = table.Column<int>(type: "integer", nullable: false),
                     Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Price = table.Column<decimal>(type: "numeric(10,2)", nullable: false),
+                    Position = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Capacity = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>

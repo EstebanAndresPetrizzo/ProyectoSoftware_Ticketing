@@ -14,6 +14,10 @@ namespace ProyectoSoftware_Ticketing.DTOs.Sector
         /// </summary>
         public string Name { get; set; }
         /// <summary>
+        /// Posición del sector dentro del evento (ej: "front", "center", "back").
+        /// </summary>       
+        public string SectorPosition { get; set; }
+        /// <summary>
         /// Precio por entrada en el sector.
         /// </summary>
         public decimal Price { get; set; }

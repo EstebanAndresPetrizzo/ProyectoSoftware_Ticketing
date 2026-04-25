@@ -36,6 +36,7 @@ namespace TicketingAPI.Data
                 EventId = evento.Id,
                 Name = "Campo",
                 Price = 5000,
+                Position = "center",
                 Capacity = 50
             };
 
@@ -45,6 +46,7 @@ namespace TicketingAPI.Data
                 EventId = evento.Id,
                 Name = "Platea",
                 Price = 12000,
+                Position = "front",
                 Capacity = 50
             };
 
