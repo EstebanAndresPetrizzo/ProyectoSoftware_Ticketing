@@ -11,7 +11,7 @@ namespace ProyectoSoftware_Ticketing.DTOs.Reservation
         /// <summary>
         /// Identificador único de la reserva.
         /// </summary>
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         /// <summary>
         /// Identificador del evento para el cual se realizó la reserva.
         /// </summary>
@@ -27,9 +27,9 @@ namespace ProyectoSoftware_Ticketing.DTOs.Reservation
         public int SeatId { get; set; }
 
         /// <summary>
-        /// Nombre o identificador del usuario que realizó la reserva.
+        /// Identificador del usuario que realizó la reserva.
         /// </summary>
-        public string User { get; set; }
+        public Guid UserId { get; set; }
         /// <summary>
         /// Estado actual de la reserva.
         /// </summary>

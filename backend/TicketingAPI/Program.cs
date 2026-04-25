@@ -17,6 +17,11 @@ builder.Services.AddScoped<TicketingAPI.Repositories.IReservationRepository, Tic
 builder.Services.AddScoped<TicketingAPI.Repositories.IAuditLogRepository, TicketingAPI.Repositories.AuditLogRepository>();
 builder.Services.AddScoped<TicketingAPI.Repositories.IUnitOfWork, TicketingAPI.Repositories.UnitOfWork>();
 
+// Application Services
+builder.Services.AddScoped<TicketingAPI.Application.Services.Interfaces.IEventService, TicketingAPI.Application.Services.Implementations.EventService>();
+builder.Services.AddScoped<TicketingAPI.Application.Services.Interfaces.ISeatService, TicketingAPI.Application.Services.Implementations.SeatService>();
+builder.Services.AddScoped<TicketingAPI.Application.Services.Interfaces.IReservationService, TicketingAPI.Application.Services.Implementations.ReservationService>();
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>

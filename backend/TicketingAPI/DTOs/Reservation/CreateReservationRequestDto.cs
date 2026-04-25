@@ -18,8 +18,8 @@ namespace ProyectoSoftware_Ticketing.DTOs.Reservation
         /// </summary>
         public int SeatId { get; set; }
         /// <summary>
-        /// Nombre o identificador del usuario que está realizando la reserva.
+        /// Identificador del usuario que está realizando la reserva.
         /// </summary>
-        public string User { get; set; }
+        public Guid UserId { get; set; }
     }
 }

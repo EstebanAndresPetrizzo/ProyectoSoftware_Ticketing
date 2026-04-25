@@ -2,7 +2,7 @@ namespace TicketingAPI.Models
 {
     public class Seat
     {
-        public Guid Id { get; set; } = Guid.NewGuid();
+        public int Id { get; set; }
         public int SectorId { get; set; }
         public string RowIdentifier { get; set; } = string.Empty;
         public int SeatNumber { get; set; }

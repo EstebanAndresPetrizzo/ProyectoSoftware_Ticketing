@@ -12,7 +12,7 @@ using TicketingAPI.Data;
 namespace TicketingAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260420032209_InitialCreate")]
+    [Migration("20260424041228_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -53,8 +53,8 @@ namespace TicketingAPI.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<int?>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -107,8 +107,8 @@ namespace TicketingAPI.Migrations
                     b.Property<DateTime>("ReservedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid?>("SeatId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("SeatId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -116,8 +116,8 @@ namespace TicketingAPI.Migrations
                         .HasColumnType("text")
                         .HasDefaultValue("Pending");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -131,9 +131,11 @@ namespace TicketingAPI.Migrations
 
             modelBuilder.Entity("TicketingAPI.Models.Seat", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("RowIdentifier")
                         .IsRequired()
@@ -196,11 +198,9 @@ namespace TicketingAPI.Migrations
 
             modelBuilder.Entity("TicketingAPI.Models.User", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Email")
                         .IsRequired()
