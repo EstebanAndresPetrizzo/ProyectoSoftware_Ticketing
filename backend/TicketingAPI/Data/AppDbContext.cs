@@ -32,6 +32,7 @@ namespace TicketingAPI.Data
             {
                 entity.HasKey(s => s.Id);
                 entity.Property(s => s.Name).IsRequired().HasMaxLength(100);
+                entity.Property(s => s.Position).IsRequired().HasMaxLength(100);
                 entity.Property(s => s.Price).HasColumnType("decimal(10,2)");
 
                 entity.HasOne(s => s.Event)
