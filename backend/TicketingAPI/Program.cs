@@ -52,6 +52,9 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    // Aplicar migraciones pendientes
+    db.Database.Migrate();
+    // Sembrar datos iniciales si es necesario
     DbSeeder.Seed(db);
 }
 app.Run();
