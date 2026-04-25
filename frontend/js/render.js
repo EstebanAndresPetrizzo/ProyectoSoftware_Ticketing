@@ -87,7 +87,7 @@ function renderVerticalSector(sectorId, sectorCfg, sectorState, selected) {
   }
   return `
     <div class="text-center">
-      <div class="sector-label mb-1" style="writing-mode: vertical-rl; transform: rotate(180deg);">${sectorCfg.name} · ${sectorCfg.price}$</div>
+      <div class="sector-label mb-2">${sectorCfg.name} · ${sectorCfg.price}$</div>
       <div class="flex flex-col gap-1">${cols.join("")}</div>
     </div>
   `;
