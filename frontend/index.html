@@ -1,111 +1,62 @@
 <!doctype html>
 <html lang="es">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>TicketingApp — Selecciona tu butaca</title>
-    <meta name="description" content="Compra entradas y elige tu butaca en tiempo real." />
 
-    <!-- Tailwind CDN para estilos rápidos -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-      :root {
-        --available: #16a34a;
-        --reserved: #f59e0b;
-        --sold: #dc2626;
-        --selected: #2563eb;
-        --vip: #a855f7;
-        --stage: #0f172a;
-      }
-      .seat {
-        width: 22px; height: 22px; border-radius: 6px 6px 3px 3px;
-        display: inline-flex; align-items: center; justify-content: center;
-        font-size: 10px; color: white; cursor: pointer;
-        transition: transform .12s ease, box-shadow .12s ease;
-        user-select: none; border: 1px solid rgba(0,0,0,.15);
-      }
-      .seat:hover:not(.is-sold):not(.is-reserved) { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,.2); }
-      .seat.is-available { background: var(--available); }
-      .seat.is-reserved  { background: var(--reserved); cursor: not-allowed; }
-      .seat.is-sold      { background: var(--sold); cursor: not-allowed; opacity: .85; }
-      .seat.is-selected  { background: var(--selected); outline: 2px solid #1e40af; }
-      .seat.is-vip       { box-shadow: inset 0 0 0 2px var(--vip); }
-      .legend-dot { width: 14px; height: 14px; border-radius: 4px; display: inline-block; }
-      .stage {
-        background: linear-gradient(180deg, #1e293b, #0f172a);
-        color: #fbbf24; text-align: center; padding: 12px;
-        border-radius: 8px; letter-spacing: .15em; font-weight: 600;
-        box-shadow: 0 8px 24px rgba(0,0,0,.25);
-      }
-      .fence {
-        height: 6px;
-        background: repeating-linear-gradient(90deg, #64748b 0 8px, #cbd5e1 8px 14px);
-        border-radius: 3px; margin: 8px 0;
-        position: relative;
-      }
-      .fence::after {
-        content: "🚧 valla de separación";
-        position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
-        background: white; padding: 0 8px; font-size: 10px; color: #475569;
-      }
-      .sector-label {
-        font-size: 11px; font-weight: 700; color: #475569;
-        letter-spacing: .1em; text-transform: uppercase;
-      }
-      .seat-row { display: flex; gap: 4px; justify-content: center; }
-      .seat-grid { display: flex; flex-direction: column; gap: 4px; }
-      .side-sector .seat-grid { gap: 4px; }
-      .side-sector .seat-row { flex-direction: column; gap: 4px; }
-      .map-grid {
-        display: grid;
-        grid-template-columns: auto 1fr auto;
-        grid-template-rows: auto auto auto auto auto;
-        gap: 12px; align-items: center; justify-items: center;
-      }
-    </style>
-  </head>
-  <body class="bg-slate-50 text-slate-900 min-h-screen">
-    <header class="bg-white border-b border-slate-200">
-      <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-        <h1 class="text-xl font-bold">🎫 TicketingApp</h1>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TicketingApp — Selecciona tu butaca</title>
+  <meta name="description" content="Compra entradas y elige tu butaca en tiempo real." />
+
+  <!-- Tailwind CDN para estilos rápidos -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/frontend/css/styles.css" />
+</head>
+
+<body class="bg-slate-50 text-slate-900 min-h-screen">
+  <header class="bg-white border-b border-slate-200">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+      <h1 class="text-xl font-bold">🎫 TicketingApp</h1>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto p-4 grid lg:grid-cols-[1fr_320px] gap-6">
+    <section class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+      <div id="view-catalog"></div>
+      <div id="view-seats" class="hidden">
+        <button id="btn-back" class="text-sm text-blue-600 hover:underline mb-3">← Volver al catálogo</button>
+        <h2 id="event-title" class="text-2xl font-bold mb-1"></h2>
+        <p id="event-meta" class="text-sm text-slate-500 mb-4"></p>
+        <div id="stadium-map" class="overflow-x-auto py-4"></div>
       </div>
-    </header>
+    </section>
 
-    <main class="max-w-6xl mx-auto p-4 grid lg:grid-cols-[1fr_320px] gap-6">
-      <section class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
-        <div id="view-catalog"></div>
-        <div id="view-seats" class="hidden">
-          <button id="btn-back" class="text-sm text-blue-600 hover:underline mb-3">← Volver al catálogo</button>
-          <h2 id="event-title" class="text-2xl font-bold mb-1"></h2>
-          <p id="event-meta" class="text-sm text-slate-500 mb-4"></p>
-          <div id="stadium-map" class="overflow-x-auto py-4"></div>
-        </div>
-      </section>
+    <aside class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 h-fit lg:sticky lg:top-4">
+      <h3 class="font-semibold mb-3">Tu selección</h3>
+      <ul id="selection-list" class="text-sm text-slate-600 mb-3 min-h-[40px]">
+        <li class="text-slate-400">Aún no has elegido butacas.</li>
+      </ul>
+      <div id="countdown" class="hidden mb-3 p-2 bg-amber-50 border border-amber-200 rounded text-sm text-amber-800">
+        ⏱ Reserva expira en <span id="countdown-time" class="font-mono font-bold">5:00</span>
+      </div>
+      <div class="flex justify-between text-sm mb-2"><span>Total:</span><strong id="total">0,00 $</strong></div>
+      <button id="btn-buy"
+        class="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700 transition"
+        disabled>Comprar</button>
 
-      <aside class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 h-fit lg:sticky lg:top-4">
-        <h3 class="font-semibold mb-3">Tu selección</h3>
-        <ul id="selection-list" class="text-sm text-slate-600 mb-3 min-h-[40px]">
-          <li class="text-slate-400">Aún no has elegido butacas.</li>
+      <div class="mt-6 pt-4 border-t border-slate-100">
+        <h4 class="text-xs font-semibold text-slate-500 mb-2">LEYENDA</h4>
+        <ul class="space-y-1 text-xs">
+          <li><span class="legend-dot" style="background:var(--available)"></span> ✓ Disponible</li>
+          <li><span class="legend-dot" style="background:var(--reserved)"></span> ⏱ Reservado</li>
+          <li><span class="legend-dot" style="background:var(--sold)"></span> ✕ Vendido</li>
+          <li><span class="legend-dot" style="background:var(--selected)"></span> ★ Tu selección</li>
+          <li><span class="legend-dot" style="background:white;border:2px solid var(--vip)"></span> VIP</li>
         </ul>
-        <div id="countdown" class="hidden mb-3 p-2 bg-amber-50 border border-amber-200 rounded text-sm text-amber-800">
-          ⏱ Reserva expira en <span id="countdown-time" class="font-mono font-bold">5:00</span>
-        </div>
-        <div class="flex justify-between text-sm mb-2"><span>Total:</span><strong id="total">0,00 $</strong></div>
-        <button id="btn-buy" class="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700 transition" disabled>Comprar</button>
+      </div>
+    </aside>
+  </main>
 
-        <div class="mt-6 pt-4 border-t border-slate-100">
-          <h4 class="text-xs font-semibold text-slate-500 mb-2">LEYENDA</h4>
-          <ul class="space-y-1 text-xs">
-            <li><span class="legend-dot" style="background:var(--available)"></span> ✓ Disponible</li>
-            <li><span class="legend-dot" style="background:var(--reserved)"></span> ⏱ Reservado</li>
-            <li><span class="legend-dot" style="background:var(--sold)"></span> ✕ Vendido</li>
-            <li><span class="legend-dot" style="background:var(--selected)"></span> ★ Tu selección</li>
-            <li><span class="legend-dot" style="background:white;border:2px solid var(--vip)"></span> VIP</li>
-          </ul>
-        </div>
-      </aside>
-    </main>
+  <script type="module" src="js/main.js"></script>
+</body>
 
-    <script type="module" src="js/main.js"></script>
-  </body>
 </html>
