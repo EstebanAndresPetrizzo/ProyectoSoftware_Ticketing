@@ -208,7 +208,6 @@ export function renderStadium(container, eventState, selected, onSeatClick) {
     if (!sectorsByPosition[sector.position]) {
       sectorsByPosition[sector.position] = [];
     }
-
     sectorsByPosition[sector.position].push(sector);
   }
 
@@ -218,48 +217,25 @@ export function renderStadium(container, eventState, selected, onSeatClick) {
         🎤 ESCENARIO
       </div>
 
-      ${sectorsByPosition.vip.map(sector => `
-        <div style="grid-column: 1 / 4;">
-          ${renderSector(sector, selected)}
-        </div>
-      `).join("")}
-
-      ${sectorsByPosition.front.map(sector => `
-        <div style="grid-column: 1 / 4;">
-          ${renderSector(sector, selected)}
-        </div>
-      `).join("")}
-
-      <div style="grid-column: 1;">
-        ${sectorsByPosition.left
-          .map(sector => renderSector(sector, selected))
-          .join("")}
-      </div>
-
-      <div style="grid-column: 2;">
-        ${sectorsByPosition.center
-          .map(sector => renderSector(sector, selected))
-          .join("")}
-      </div>
-
-      <div style="grid-column: 3;">
-        ${sectorsByPosition.right
-          .map(sector => renderSector(sector, selected))
-          .join("")}
-      </div>
-
-      ${sectorsByPosition.back.map(sector => `
-        <div style="grid-column: 1 / 4;">
-          ${renderSector(sector, selected)}
-        </div>
-      `).join("")}
+      ${Object.entries(sectorsByPosition).map(([pos, sectors]) =>
+        sectors.map(sector => `
+          <div style="grid-column: 1 / 4;">
+            ${renderSector(sector, selected)}
+          </div>
+        `).join("")
+      ).join("")}
     </div>
   `;
 
-  container.querySelectorAll("[data-seat-id]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      onSeatClick(Number(btn.dataset.seatId));
-    });
+  // 🔥 FIX IMPORTANTE: event delegation (MUY estable)
+  container.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-seat-id]");
+    if (!btn) return;
+
+    const seatId = Number(btn.dataset.seatId);
+    if (Number.isNaN(seatId)) return;
+
+    onSeatClick(seatId);
   });
 }
 
