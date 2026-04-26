@@ -23,6 +23,7 @@ services:
       - postgres
     environment:
       ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=ticketing;Username=ticketing_user;Password=ticketing_pass
+      ASPNETCORE_ENVIRONMENT: Development
     ports:
       - "5000:8080"
 
