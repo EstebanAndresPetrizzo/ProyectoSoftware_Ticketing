@@ -27,21 +27,30 @@ namespace TicketingAPI.Controllers
         {
             try
             {
-                var events = await _eventService.GetAllEventsAsync();
-                
-                // Aplicamos paginación en memoria para cumplir el requisito de la Fase 1
-                var paginatedEvents = events
-                    .Skip((page - 1) * pageSize)
-                    .Take(pageSize)
-                    .ToList();
+                var (items, totalItems) = await _eventService.GetPagedEventsAsync(page, pageSize);
+                var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
 
-                return Ok(new ApiResponse<IEnumerable<EventSummaryDto>> { Success = true, Data = paginatedEvents });
+                return Ok(new ApiResponse<IEnumerable<EventSummaryDto>>
+                {
+                    Success = true,
+                    Data    = items,
+                    Pagination = new PaginationDto
+                    {
+                        Page        = page,
+                        PageSize    = pageSize,
+                        TotalItems  = totalItems,
+                        TotalPages  = totalPages,
+                        HasNext     = page < totalPages,
+                        HasPrevious = page > 1
+                    }
+                });
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new ApiResponse<IEnumerable<EventSummaryDto>> { Success = false, Error = ex.Message });
             }
         }
+
 
         /// <summary>
         /// Devuelve el estado actual de todas las butacas para un evento.
