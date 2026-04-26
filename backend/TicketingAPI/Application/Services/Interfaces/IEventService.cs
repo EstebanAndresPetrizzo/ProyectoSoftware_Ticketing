@@ -4,7 +4,7 @@ namespace TicketingAPI.Application.Services.Interfaces
 {
     public interface IEventService
     {
-        Task<IEnumerable<EventSummaryDto>> GetAllEventsAsync();
+        Task<(IEnumerable<EventSummaryDto> Items, int TotalItems)> GetPagedEventsAsync(int page, int pageSize);
         Task<EventResponseDto?> GetEventByIdAsync(int id);
     }
 }
