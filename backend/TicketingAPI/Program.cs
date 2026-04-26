@@ -14,8 +14,11 @@ builder.Services.AddControllers()
             new JsonStringEnumConverter()
         );
     });;
-// Generador nativo de .NET 10
-builder.Services.AddOpenApi();
+// Generador nativo de .NET 10 — forzamos OpenAPI 3.0 para compatibilidad con Swagger UI
+builder.Services.AddOpenApi(options =>
+{
+    options.OpenApiVersion = Microsoft.OpenApi.OpenApiSpecVersion.OpenApi3_0;
+});
 // Conexión a PostgreSQL con EF Core
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
@@ -48,7 +51,7 @@ if (app.Environment.IsDevelopment())
 {
     // .NET 10 genera el JSON en /openapi/v1.json
     app.MapOpenApi();
-    // Swagger UI 
+    // Swagger UI
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/openapi/v1.json", "Ticketing API v1");
