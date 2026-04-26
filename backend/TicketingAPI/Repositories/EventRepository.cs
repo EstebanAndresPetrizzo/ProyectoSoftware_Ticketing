@@ -38,5 +38,14 @@ namespace TicketingAPI.Repositories
                 .ThenInclude(v => v.Sectors)
                 .FirstOrDefaultAsync(e => e.Id == id);
         }
+
+        public async Task<Event?> GetEventWithSeatMapAsync(int eventId)
+        {
+            return await _context.Events
+                .Include(e => e.Venue)
+                    .ThenInclude(v => v.Sectors)
+                        .ThenInclude(s => s.Seats)
+                .FirstOrDefaultAsync(e => e.Id == eventId);
+        }
     }
 }

@@ -15,14 +15,14 @@ namespace ProyectoSoftware_Ticketing.DTOs.Event
         /// <summary>
         /// Nombre del evento (ej: "Coldplay en River").
         /// </summary>
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
         /// <summary>
         /// Ubicación o recinto donde se realiza el evento.
         /// </summary>
-        public string Venue { get; set; }
+        public string Venue { get; set; } = string.Empty;
         /// <summary>
         /// Fecha y hora programada del evento.
         /// </summary> 
-        public DateTime Date { get; set; }
+        public DateTime Date { get; set; } = DateTime.MinValue;
     }
 }

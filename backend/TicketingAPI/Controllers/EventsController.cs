@@ -47,16 +47,33 @@ namespace TicketingAPI.Controllers
         /// Devuelve el estado actual de todas las butacas para un evento.
         /// </summary>
         [HttpGet("{id}/seats")]
-        public async Task<ActionResult<ApiResponse<IEnumerable<SeatDto>>>> GetSeats([FromRoute] int id)
+        public async Task<ActionResult<ApiResponse<EventSeatMapDto>>> GetSeats([FromRoute] int id)
         {
             try
             {
-                var seats = await _seatService.GetSeatsByEventIdAsync(id);
-                return Ok(new ApiResponse<IEnumerable<SeatDto>> { Success = true, Data = seats });
+                var seatMap = await _seatService.GetSeatMapByEventIdAsync(id);
+
+                return Ok(new ApiResponse<EventSeatMapDto>
+                {
+                    Success = true,
+                    Data = seatMap
+                });
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(new ApiResponse<EventSeatMapDto>
+                {
+                    Success = false,
+                    Error = ex.Message
+                });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new ApiResponse<IEnumerable<SeatDto>> { Success = false, Error = ex.Message });
+                return StatusCode(500, new ApiResponse<EventSeatMapDto>
+                {
+                    Success = false,
+                    Error = ex.Message
+                });
             }
         }
     }

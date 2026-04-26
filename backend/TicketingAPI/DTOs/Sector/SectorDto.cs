@@ -12,7 +12,7 @@ namespace ProyectoSoftware_Ticketing.DTOs.Sector
         /// <summary>
         /// Nombre del sector (ej: "Platea Alta", "Campo", "VIP").
         /// </summary>
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
         /// <summary>
         /// Precio por entrada en el sector.
         /// </summary>
@@ -30,6 +30,6 @@ namespace ProyectoSoftware_Ticketing.DTOs.Sector
         /// <summary>
         /// Posición del sector dentro del recinto (ej. Center, Sides).
         /// </summary>
-        public string Position { get; set; }
+        public string Position { get; set; } = string.Empty;
     }
 }
