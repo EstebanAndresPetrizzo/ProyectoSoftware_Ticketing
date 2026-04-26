@@ -3,25 +3,60 @@ import { renderCatalog, renderStadium, renderSelection } from "./ui/render.js";
 
 const state = {
   eventId: null,
+  stadium: null,
   eventState: null,
-  selected: [], // [{ seatId, reservedUntil }]
+  selected: [],
   pollTimer: null,
   countdownTimer: null,
+
+  currentPage: 1,
+  pageSize: 10,
+  pagination: null
 };
 
 const $ = (id) => document.getElementById(id);
 
 async function init() {
-  const events = await api.listEvents();
-
-  renderCatalog(
-    $("view-catalog"),
-    events,
-    openEvent
-  );
+  await loadCatalog();
 
   $("btn-back").addEventListener("click", backToCatalog);
   $("btn-buy").addEventListener("click", confirmPurchase);
+}
+
+async function loadCatalog() {
+  const result = await api.listEvents(
+    state.currentPage,
+    state.pageSize
+  );
+
+  state.pagination = result.pagination;
+
+  renderCatalog(
+    $("view-catalog"),
+    result.events,
+    openEvent,
+    state.pagination,
+    changePage,
+    changePageSize
+  );
+}
+
+async function changePageSize(newSize) {
+  state.pageSize = Number(newSize);
+  state.currentPage = 1;
+
+  await loadCatalog();
+}
+
+async function changePage(page) {
+  if (
+    page < 1 ||
+    page > state.pagination.totalPages
+  ) return;
+
+  state.currentPage = page;
+
+  await loadCatalog();
 }
 
 async function openEvent(eventId) {
@@ -45,7 +80,7 @@ async function openEvent(eventId) {
 
 function backToCatalog() {
   state.selected.forEach(s =>
-    api.releaseSeat(state.eventId, s.seatId)
+    api.releaseSeat(state.eventId, s.sectorId, s.seatId)
   );
 
   state.selected = [];
@@ -57,7 +92,7 @@ function backToCatalog() {
   $("view-seats").classList.add("hidden");
   $("view-catalog").classList.remove("hidden");
 
-  updateSelectionUI();
+  loadCatalog();
 }
 
 async function refreshSeats() {
