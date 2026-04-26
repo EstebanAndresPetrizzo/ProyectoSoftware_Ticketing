@@ -1,16 +1,35 @@
 const BASE_URL = "http://localhost:5000/api/v1";
 
 export const api = {
-  async listEvents() {
-    const res = await fetch(`${BASE_URL}/events`);
+  async listEvents(page = 1, pageSize = 10) {
+    const res = await fetch(
+      `${BASE_URL}/events?page=${page}&pageSize=${pageSize}`
+    );
+
     const json = await res.json();
 
-    return json.data.map(event => ({
-      id: event.id,
-      name: event.name,
-      date: event.date,
-      venue: event.venue
-    }));
+    return {
+      events: json.data.map(event => ({
+        id: event.id,
+        name: event.name,
+        date: event.date,
+        venue: event.venue
+      })),
+
+      pagination: {
+        page,
+        pageSize,
+        // Estimación: si la página está llena, hay más páginas
+        totalItems: json.data.length === pageSize 
+          ? (page + 1) * pageSize 
+          : json.data.length,
+        totalPages: json.data.length === pageSize 
+          ? page + 1 
+          : Math.max(1, page),
+        hasNext: json.data.length === pageSize,
+        hasPrevious: page > 1
+      }
+    };
   },
 
   async getSeats(eventId) {

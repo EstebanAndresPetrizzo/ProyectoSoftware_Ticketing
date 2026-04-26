@@ -1,30 +1,100 @@
 // Renderiza catálogo y mapa de asientos basado en backend real.
 
-export function renderCatalog(container, events, onSelect) {
+export function renderCatalog(
+  container,
+  events,
+  onSelect,
+  pagination,
+  onPageChange,
+  onPageSizeChange
+) {
   container.innerHTML = `
-    <h2 class="text-2xl font-bold mb-4">Eventos disponibles</h2>
-    <div class="grid sm:grid-cols-2 gap-4">
-      ${events.map(event => `
+  <div class="flex justify-between items-center mb-4">
+  </div>
+    <h2 class="text-2xl font-bold mb-4">
+      Eventos disponibles
+    </h2>
+
+    <div class="grid sm:grid-cols-2 gap-4 mb-6">
+      ${events.map(e => `
         <article
           class="border border-slate-200 rounded-lg p-4 hover:border-blue-400 hover:shadow-md transition cursor-pointer"
-          data-event-id="${event.id}"
+          data-event-id="${e.id}"
         >
-          <h3 class="font-semibold text-lg">${event.name}</h3>
-          <p class="text-sm text-slate-500 mt-1">📅 ${event.date}</p>
-          <p class="text-sm text-slate-500">📍 ${event.venue}</p>
+          <h3 class="font-semibold text-lg">${e.name}</h3>
+          <p class="text-sm text-slate-500 mt-1">📅 ${e.date}</p>
+          <p class="text-sm text-slate-500">📍 ${e.venue}</p>
           <button class="mt-3 text-sm text-blue-600 font-medium hover:underline">
             Elegir butacas →
           </button>
         </article>
       `).join("")}
     </div>
+    <div class="flex justify-center items-center gap-4 mt-6">
+      <label class="text-sm text-slate-600">
+        Mostrar:
+      </label>
+
+      <select
+        id="page-size-select"
+        class="border border-slate-300 rounded-md px-2 py-1 text-sm"
+      >
+        <option value="2" ${pagination.pageSize === 2 ? "selected" : ""}>2</option>
+        <option value="5" ${pagination.pageSize === 5 ? "selected" : ""}>5</option>
+        <option value="10" ${pagination.pageSize === 10 ? "selected" : ""}>10</option>
+        <option value="20" ${pagination.pageSize === 20 ? "selected" : ""}>20</option>
+      </select>
+      <button
+        id="btn-prev-page"
+        class="px-4 py-2 rounded border disabled:opacity-50"
+        ${!pagination.hasPrevious ? "disabled" : ""}
+      >
+        ← Anterior
+      </button>
+
+      <span class="text-sm text-slate-600">
+        Página ${pagination.page} de ${pagination.totalPages}
+      </span>
+
+      <button
+        id="btn-next-page"
+        class="px-4 py-2 rounded border disabled:opacity-50"
+        ${!pagination.hasNext ? "disabled" : ""}
+      >
+        Siguiente →
+      </button>
+    </div>
   `;
 
   container.querySelectorAll("[data-event-id]").forEach(card => {
-    card.addEventListener("click", () => {
-      onSelect(Number(card.dataset.eventId));
-    });
+    card.addEventListener("click", () =>
+      onSelect(Number(card.dataset.eventId))
+    );
   });
+
+  container
+    .querySelector("#btn-prev-page")
+    ?.addEventListener("click", () =>
+      onPageChange(pagination.page - 1)
+    );
+
+  container
+    .querySelector("#btn-next-page")
+    ?.addEventListener("click", () =>
+      onPageChange(pagination.page + 1)
+    );
+
+  container
+    .querySelector("#btn-page-size")
+    ?.addEventListener("change", (e) =>
+      onPageSizeChange(e.target.value)
+    );
+
+  container
+    .querySelector("#page-size-select")
+    ?.addEventListener("change", e =>
+      onPageSizeChange(e.target.value)
+    );
 }
 
 function normalizeSeatStatus(status) {
