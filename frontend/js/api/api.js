@@ -19,12 +19,15 @@ export const api = {
       pagination: {
         page,
         pageSize,
-
-        // Temporal mientras backend no devuelva metadata real:
-        totalItems: json.data.length,
-        totalPages: 1,
-        hasNext: false,
-        hasPrevious: false
+        // Estimación: si la página está llena, hay más páginas
+        totalItems: json.data.length === pageSize 
+          ? (page + 1) * pageSize 
+          : json.data.length,
+        totalPages: json.data.length === pageSize 
+          ? page + 1 
+          : Math.max(1, page),
+        hasNext: json.data.length === pageSize,
+        hasPrevious: page > 1
       }
     };
   },
