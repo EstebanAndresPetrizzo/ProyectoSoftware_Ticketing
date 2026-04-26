@@ -12,7 +12,7 @@ using TicketingAPI.Data;
 namespace TicketingAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260424041228_InitialCreate")]
+    [Migration("20260425192947_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -85,12 +85,12 @@ namespace TicketingAPI.Migrations
                         .HasColumnType("text")
                         .HasDefaultValue("Active");
 
-                    b.Property<string>("Venue")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                    b.Property<int>("VenueId")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("VenueId");
 
                     b.ToTable("Events");
                 });
@@ -175,10 +175,7 @@ namespace TicketingAPI.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("Capacity")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("EventId")
+                    b.Property<int>("Cols")
                         .HasColumnType("integer");
 
                     b.Property<string>("Name")
@@ -186,12 +183,29 @@ namespace TicketingAPI.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<string>("Position")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(10,2)");
 
+                    b.Property<int>("Rows")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("Active");
+
+                    b.Property<int>("VenueId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("EventId");
+                    b.HasIndex("VenueId");
 
                     b.ToTable("Sectors");
                 });
@@ -224,6 +238,33 @@ namespace TicketingAPI.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("TicketingAPI.Models.Venue", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Capacity")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("Active");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Venues");
+                });
+
             modelBuilder.Entity("TicketingAPI.Models.AuditLog", b =>
                 {
                     b.HasOne("TicketingAPI.Models.User", "User")
@@ -232,6 +273,17 @@ namespace TicketingAPI.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("TicketingAPI.Models.Event", b =>
+                {
+                    b.HasOne("TicketingAPI.Models.Venue", "Venue")
+                        .WithMany("Events")
+                        .HasForeignKey("VenueId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Venue");
                 });
 
             modelBuilder.Entity("TicketingAPI.Models.Reservation", b =>
@@ -265,18 +317,13 @@ namespace TicketingAPI.Migrations
 
             modelBuilder.Entity("TicketingAPI.Models.Sector", b =>
                 {
-                    b.HasOne("TicketingAPI.Models.Event", "Event")
+                    b.HasOne("TicketingAPI.Models.Venue", "Venue")
                         .WithMany("Sectors")
-                        .HasForeignKey("EventId")
+                        .HasForeignKey("VenueId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Event");
-                });
-
-            modelBuilder.Entity("TicketingAPI.Models.Event", b =>
-                {
-                    b.Navigation("Sectors");
+                    b.Navigation("Venue");
                 });
 
             modelBuilder.Entity("TicketingAPI.Models.Seat", b =>
@@ -294,6 +341,13 @@ namespace TicketingAPI.Migrations
                     b.Navigation("AuditLogs");
 
                     b.Navigation("Reservations");
+                });
+
+            modelBuilder.Entity("TicketingAPI.Models.Venue", b =>
+                {
+                    b.Navigation("Events");
+
+                    b.Navigation("Sectors");
                 });
 #pragma warning restore 612, 618
         }
