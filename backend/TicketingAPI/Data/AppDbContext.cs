@@ -100,6 +100,12 @@ namespace TicketingAPI.Data
                       .HasForeignKey<Reservation>(r => r.SeatId)
                       .IsRequired(false)
                       .OnDelete(DeleteBehavior.Restrict);
+
+                    // Relación Reservation → Event
+                entity.HasOne(r => r.Event)
+                      .WithMany(e => e.Reservations)
+                      .HasForeignKey(r => r.EventId)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
 
             // AuditLog

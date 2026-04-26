@@ -8,5 +8,6 @@ namespace TicketingAPI.Models
         public int VenueId { get; set; }
         public string Status { get; set; } = "Active";
         public Venue Venue { get; set; } = null!;
+        public List<Reservation> Reservations { get; set; } = new List<Reservation>();
     }
 }

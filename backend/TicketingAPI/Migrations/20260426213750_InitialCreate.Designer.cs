@@ -12,7 +12,7 @@ using TicketingAPI.Data;
 namespace TicketingAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260425192947_InitialCreate")]
+    [Migration("20260426213750_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -101,6 +101,9 @@ namespace TicketingAPI.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<int>("EventId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("ExpiresAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -120,6 +123,8 @@ namespace TicketingAPI.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("EventId");
 
                     b.HasIndex("SeatId")
                         .IsUnique();
@@ -288,6 +293,12 @@ namespace TicketingAPI.Migrations
 
             modelBuilder.Entity("TicketingAPI.Models.Reservation", b =>
                 {
+                    b.HasOne("TicketingAPI.Models.Event", "Event")
+                        .WithMany("Reservations")
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("TicketingAPI.Models.Seat", "Seat")
                         .WithOne("Reservation")
                         .HasForeignKey("TicketingAPI.Models.Reservation", "SeatId")
@@ -298,6 +309,8 @@ namespace TicketingAPI.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Event");
 
                     b.Navigation("Seat");
 
@@ -324,6 +337,11 @@ namespace TicketingAPI.Migrations
                         .IsRequired();
 
                     b.Navigation("Venue");
+                });
+
+            modelBuilder.Entity("TicketingAPI.Models.Event", b =>
+                {
+                    b.Navigation("Reservations");
                 });
 
             modelBuilder.Entity("TicketingAPI.Models.Seat", b =>
