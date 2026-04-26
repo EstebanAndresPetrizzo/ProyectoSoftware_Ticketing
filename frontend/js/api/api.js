@@ -30,7 +30,7 @@ export const api = {
         eventId: Number(eventId),
         sectorId: Number(sectorId),
         seatId: Number(seatId),
-        userId: crypto.randomUUID()
+        userId: "11111111-1111-1111-1111-111111111111"
       })
     });
 

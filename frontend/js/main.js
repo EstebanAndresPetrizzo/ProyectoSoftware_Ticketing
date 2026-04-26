@@ -91,10 +91,7 @@ async function onSeatClick(seatId) {
   );
 
   if (alreadySelected) {
-    await api.releaseSeat(
-      state.eventId,
-      seatId
-    );
+    await api.releaseSeat(state.eventId, seatId);
 
     state.selected = state.selected.filter(
       s => s.seatId !== seatId
@@ -105,8 +102,25 @@ async function onSeatClick(seatId) {
   }
 
   try {
+    // 🔥 buscar sector correcto del asiento
+    let foundSectorId = null;
+
+    for (const sector of state.eventState.sectors) {
+      const seat = sector.seats.find(s => s.id === seatId);
+
+      if (seat) {
+        foundSectorId = seat.sectorId;
+        break;
+      }
+    }
+
+    if (!foundSectorId) {
+      throw new Error("No se encontró el sector del asiento");
+    }
+
     const result = await api.reserveSeat(
       state.eventId,
+      foundSectorId,
       seatId
     );
 
@@ -116,6 +130,7 @@ async function onSeatClick(seatId) {
     });
 
     await refreshSeats();
+
   } catch (err) {
     alert("⚠️ " + err.message);
     await refreshSeats();
