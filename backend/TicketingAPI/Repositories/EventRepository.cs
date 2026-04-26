@@ -23,7 +23,7 @@ namespace TicketingAPI.Repositories
         /// <returns>Una lista de eventos.</returns>
         public async Task<IEnumerable<Event>> GetAllEventsAsync()
         {
-            return await _context.Events.ToListAsync();
+            return await _context.Events.Include(e => e.Venue).ToListAsync();
         }
 
         /// <summary>
@@ -34,7 +34,8 @@ namespace TicketingAPI.Repositories
         public async Task<Event?> GetEventByIdAsync(int id)
         {
             return await _context.Events
-                .Include(e => e.Sectors)
+                .Include(e => e.Venue)
+                .ThenInclude(v => v.Sectors)
                 .FirstOrDefaultAsync(e => e.Id == id);
         }
     }
