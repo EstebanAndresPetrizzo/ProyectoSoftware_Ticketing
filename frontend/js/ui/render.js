@@ -21,7 +21,7 @@ export function renderCatalog(
           class="border border-slate-200 rounded-lg p-4 hover:border-blue-400 hover:shadow-md transition cursor-pointer"
           data-event-id="${e.id}"
         >
-          <h3 class="font-semibold text-lg">${e.title}</h3>
+          <h3 class="font-semibold text-lg">${e.name}</h3>
           <p class="text-sm text-slate-500 mt-1">📅 ${e.date}</p>
           <p class="text-sm text-slate-500">📍 ${e.venue}</p>
           <button class="mt-3 text-sm text-blue-600 font-medium hover:underline">
