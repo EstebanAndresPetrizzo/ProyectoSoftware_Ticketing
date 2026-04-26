@@ -1,85 +1,120 @@
-import { api } from "./api.js";
-import { renderCatalog, renderStadium, renderSelection } from "./render.js";
+import { api } from "./api/api.js";
+import { renderCatalog, renderStadium, renderSelection } from "./ui/render.js";
 
-// Estado global de la app.
 const state = {
   eventId: null,
-  stadium: null,
   eventState: null,
-  selected: [], // [{ sectorId, seatId, reservedUntil }]
+  selected: [], // [{ seatId, reservedUntil }]
   pollTimer: null,
   countdownTimer: null,
 };
 
 const $ = (id) => document.getElementById(id);
 
-// Inicializa la app: carga datos y muestra catálogo de eventos.
-// Luego, al seleccionar un evento, muestra el mapa de asientos y permite reservar.
-// La lógica de reserva simula concurrencia con otros usuarios y expiración de reservas.
-// api.js simula backend, render.js tiene funciones de renderizado y main.js maneja la lógica de interacción y estado.
-// se podría usar un framework como React para manejar el estado y renderizado de forma más eficiente, 
-// pero aquí los hacemos con JS puro por simplicidad.
-// El diseño es responsive, con botones claros y feedback visual sobre el estado de cada asiento.
 async function init() {
-  // Cargar datos iniciales (estadio y eventos) y mostrar catálogo. 
-  // primer simulación
-  state.stadium = await api.getStadium();
   const events = await api.listEvents();
-  renderCatalog($("view-catalog"), events, openEvent);
+
+  renderCatalog(
+    $("view-catalog"),
+    events,
+    openEvent
+  );
+
   $("btn-back").addEventListener("click", backToCatalog);
   $("btn-buy").addEventListener("click", confirmPurchase);
 }
 
-// Abre la vista de asientos para un evento seleccionado, 
-// carga su estado y comienza el polling para actualizar concurrencia.
 async function openEvent(eventId) {
-  state.eventId = eventId;
+  state.eventId = Number(eventId);
   state.selected = [];
+
   $("view-catalog").classList.add("hidden");
   $("view-seats").classList.remove("hidden");
+
   const events = await api.listEvents();
-  const evt = events.find(e => e.id === eventId);
+  const evt = events.find(e => e.id === state.eventId);
+
   $("event-title").textContent = evt.title;
   $("event-meta").textContent = `📅 ${evt.date} · 📍 ${evt.venue}`;
+
   await refreshSeats();
-  state.pollTimer = setInterval(refreshSeats, 5000); // sync concurrencia cada 5s
+
+  clearInterval(state.pollTimer);
+  state.pollTimer = setInterval(refreshSeats, 5000);
 }
 
 function backToCatalog() {
-  // liberar mis reservas pendientes
-  state.selected.forEach(s => api.releaseSeat(state.eventId, s.sectorId, s.seatId));
+  state.selected.forEach(s =>
+    api.releaseSeat(state.eventId, s.seatId)
+  );
+
   state.selected = [];
+
   clearInterval(state.pollTimer);
   clearInterval(state.countdownTimer);
+
   $("countdown").classList.add("hidden");
   $("view-seats").classList.add("hidden");
   $("view-catalog").classList.remove("hidden");
+
   updateSelectionUI();
 }
 
 async function refreshSeats() {
   state.eventState = await api.getSeats(state.eventId);
-  // limpiar selecciones que ya no son mías (TTL expirado o robadas)
+
+  const allSeats = state.eventState.sectors.flatMap(s => s.seats);
+
   state.selected = state.selected.filter(sel => {
-    const seat = state.eventState.sectors[sel.sectorId][sel.seatId];
-    return seat.status === "reserved" && seat.owner === "me";
+    const seat = allSeats.find(s => s.id === sel.seatId);
+
+    return (
+      seat &&
+      seat.status.toLowerCase() === "reserved"
+    );
   });
-  renderStadium($("stadium-map"), state.stadium, state.eventState, state.selected, onSeatClick);
+
+  renderStadium(
+    $("stadium-map"),
+    state.eventState,
+    state.selected,
+    onSeatClick
+  );
+
   updateSelectionUI();
   updateCountdown();
 }
 
-async function onSeatClick(sectorId, seatId) {
-  const already = state.selected.find(s => s.sectorId === sectorId && s.seatId === seatId);
-  if (already) {
-    await api.releaseSeat(state.eventId, sectorId, seatId);
-    state.selected = state.selected.filter(s => s !== already);
+async function onSeatClick(seatId) {
+  const alreadySelected = state.selected.find(
+    s => s.seatId === seatId
+  );
+
+  if (alreadySelected) {
+    await api.releaseSeat(
+      state.eventId,
+      seatId
+    );
+
+    state.selected = state.selected.filter(
+      s => s.seatId !== seatId
+    );
+
     await refreshSeats();
     return;
   }
+
   try {
-    const { reservedUntil } = await api.reserveSeat(state.eventId, sectorId, seatId);
-    state.selected.push({ sectorId, seatId, reservedUntil });
+    const result = await api.reserveSeat(
+      state.eventId,
+      seatId
+    );
+
+    state.selected.push({
+      seatId,
+      reservedUntil: result.reservedUntil
+    });
+
     await refreshSeats();
   } catch (err) {
     alert("⚠️ " + err.message);
@@ -88,35 +123,68 @@ async function onSeatClick(sectorId, seatId) {
 }
 
 function updateSelectionUI() {
-  renderSelection($("selection-list"), $("total"), $("btn-buy"), state.selected, state.stadium);
+  renderSelection(
+    $("selection-list"),
+    $("total"),
+    $("btn-buy"),
+    state.selected,
+    state.eventState
+  );
 }
 
 function updateCountdown() {
   clearInterval(state.countdownTimer);
+
   if (state.selected.length === 0) {
     $("countdown").classList.add("hidden");
     return;
   }
+
   $("countdown").classList.remove("hidden");
+
   const tick = () => {
-    const earliest = Math.min(...state.selected.map(s => s.reservedUntil));
-    const remaining = Math.max(0, earliest - Date.now());
-    const m = Math.floor(remaining / 60000);
-    const s = Math.floor((remaining % 60000) / 1000);
-    $("countdown-time").textContent = `${m}:${s.toString().padStart(2, "0")}`;
-    if (remaining === 0) refreshSeats();
+    const earliestReservation = Math.min(
+      ...state.selected.map(s => s.reservedUntil)
+    );
+
+    const remaining = Math.max(
+      0,
+      earliestReservation - Date.now()
+    );
+
+    const minutes = Math.floor(remaining / 60000);
+    const seconds = Math.floor((remaining % 60000) / 1000);
+
+    $("countdown-time").textContent =
+      `${minutes}:${seconds.toString().padStart(2, "0")}`;
+
+    if (remaining === 0) {
+      refreshSeats();
+    }
   };
+
   tick();
-  state.countdownTimer = setInterval(tick, 1000);
+
+  state.countdownTimer = setInterval(
+    tick,
+    1000
+  );
 }
 
 async function confirmPurchase() {
   try {
-    const res = await api.confirmPurchase(state.eventId, state.selected);
-    alert(`✅ ¡Compra confirmada! Ticket: ${res.ticketId}`);
+    const result = await api.confirmPurchase(
+      state.eventId,
+      state.selected.map(s => s.seatId)
+    );
+
+    alert(`✅ ¡Compra confirmada! Ticket: ${result.ticketId}`);
+
     state.selected = [];
+
     clearInterval(state.countdownTimer);
     $("countdown").classList.add("hidden");
+
     await refreshSeats();
   } catch (err) {
     alert("❌ " + err.message);
