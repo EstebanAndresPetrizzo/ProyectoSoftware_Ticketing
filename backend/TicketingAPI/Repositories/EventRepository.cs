@@ -27,6 +27,26 @@ namespace TicketingAPI.Repositories
         }
 
         /// <summary>
+        /// Obtiene una página de eventos ordenados por fecha, junto con el total de registros.
+        /// </summary>
+        /// <returns>Tupla con los eventos de la página y el total de registros.</returns>
+        public async Task<(IEnumerable<Event> Items, int TotalItems)> GetPagedEventsAsync(int page, int pageSize)
+        {
+            var query = _context.Events
+                .Include(e => e.Venue)
+                .OrderBy(e => e.EventDate);
+
+            var totalItems = await query.CountAsync();
+
+            var items = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, totalItems);
+        }
+
+        /// <summary>
         /// Busca un evento específico por su ID, incluyendo todos los sectores asociados.
         /// </summary>
         /// <param name="id">El identificador único del evento.</param>
