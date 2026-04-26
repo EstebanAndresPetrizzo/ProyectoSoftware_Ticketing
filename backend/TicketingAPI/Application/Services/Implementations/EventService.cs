@@ -12,17 +12,21 @@ namespace TicketingAPI.Application.Services.Implementations
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<IEnumerable<EventSummaryDto>> GetAllEventsAsync()
+        public async Task<(IEnumerable<EventSummaryDto> Items, int TotalItems)> GetPagedEventsAsync(int page, int pageSize)
         {
-            var events = await _unitOfWork.Events.GetAllEventsAsync();
-            return events.Select(e => new EventSummaryDto
+            var (events, totalItems) = await _unitOfWork.Events.GetPagedEventsAsync(page, pageSize);
+
+            var items = events.Select(e => new EventSummaryDto
             {
-                Id = e.Id,
-                Name = e.Name,
+                Id    = e.Id,
+                Name  = e.Name,
                 Venue = e.Venue?.Name ?? "Desconocido",
-                Date = e.EventDate
+                Date  = e.EventDate
             });
+
+            return (items, totalItems);
         }
+
 
         public async Task<EventResponseDto?> GetEventByIdAsync(int id)
         {

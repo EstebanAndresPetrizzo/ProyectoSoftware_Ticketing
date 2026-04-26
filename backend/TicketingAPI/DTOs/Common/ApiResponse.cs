@@ -15,8 +15,12 @@ namespace ProyectoSoftware_Ticketing.DTOs.Common
         /// </summary>
         public T Data { get; set; } = default(T)!;
         /// <summary>
+        /// Metadata de paginación. Solo se incluye en endpoints que devuelven listas paginadas.
+        /// </summary>
+        public PaginationDto? Pagination { get; set; }
+        /// <summary>
         /// Mensaje de error en caso de que la operación haya fallado.
         /// </summary>
         public string Error { get; set; } = string.Empty;
     }
-}
+}
