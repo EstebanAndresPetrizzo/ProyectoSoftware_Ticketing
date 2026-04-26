@@ -21,92 +21,68 @@ namespace TicketingAPI.Data
 
             // Venue 1: Estadio Nacional
             var venue1 = new Venue { Name = "Estadio Nacional", Status = "Active", Capacity = 500 };
+            var venue2 = new Venue { Name = "Arena Central",    Status = "Active", Capacity = 800 };
+            var venue3 = new Venue { Name = "Sala Panorámica",  Status = "Active", Capacity = 300 };
 
-            // Venue 2: Arena Central
-            var venue2 = new Venue { Name = "Arena Central", Status = "Active", Capacity = 800 };
-
-            db.Venues.AddRange(venue1, venue2);
+            db.Venues.AddRange(venue1, venue2, venue3);
             db.SaveChanges();
 
-            // Evento 1: "Concierto de Rock" — Venue 1 — 2 sectores
-            var evento1 = new Event { Name = "Concierto de Rock",              EventDate = DateTime.UtcNow.AddMonths(2), VenueId = venue1.Id, Status = "Active" };
+            // Sectores Venue 1 - Estadio Nacional
+            var v1_vip    = new Sector { VenueId = venue1.Id, Position = "vip",    Name = "Palco VIP",         Price = 30000, Rows = 2, Cols = 10, Status = "Active" };
+            var v1_front  = new Sector { VenueId = venue1.Id, Position = "front",  Name = "Tribuna Frontal",   Price = 12000, Rows = 5, Cols = 10, Status = "Active" };
+            var v1_center = new Sector { VenueId = venue1.Id, Position = "center", Name = "Platea Central",    Price = 8000,  Rows = 5, Cols = 10, Status = "Active" };
+            var v1_back   = new Sector { VenueId = venue1.Id, Position = "back",   Name = "Gradería Trasera",  Price = 5000,  Rows = 5, Cols = 10, Status = "Active" };
 
-            // Evento 2: "Final Copa eSports" — Venue 2 — 5 sectores
-            var evento2 = new Event { Name = "Final Copa del Mundo de eSports", EventDate = DateTime.UtcNow.AddMonths(3), VenueId = venue2.Id, Status = "Active" };
+            // Sectores Venue 2 - Arena Central
+            var v2_vip    = new Sector { VenueId = venue2.Id, Position = "vip",    Name = "Palco Exclusivo",   Price = 28000, Rows = 2, Cols = 14, Status = "Active" };
+            var v2_front  = new Sector { VenueId = venue2.Id, Position = "front",  Name = "Tribuna Frontal",   Price = 18000, Rows = 4, Cols = 12, Status = "Active" };
+            var v2_center = new Sector { VenueId = venue2.Id, Position = "center", Name = "Platea Central",    Price = 15000, Rows = 6, Cols = 14, Status = "Active" };
+            var v2_back   = new Sector { VenueId = venue2.Id, Position = "back",   Name = "Gradería Trasera",  Price = 7000,  Rows = 5, Cols = 12, Status = "Active" };
+            var v2_left   = new Sector { VenueId = venue2.Id, Position = "left",   Name = "Lateral Izquierdo", Price = 10000, Rows = 4, Cols = 10, Status = "Active" };
+            var v2_right  = new Sector { VenueId = venue2.Id, Position = "right",  Name = "Lateral Derecho",   Price = 10000, Rows = 4, Cols = 10, Status = "Active" };
 
-            // Evento 3: "Gala de Premiación" — Venue 1 — 1 sector
-            var evento3 = new Event { Name = "Gala de Premiación",             EventDate = DateTime.UtcNow.AddMonths(1), VenueId = venue1.Id, Status = "Active" };
-
-            // Evento 4: "Festival de Jazz" — Venue 2 — 3 sectores
-            var evento4 = new Event { Name = "Festival de Jazz",               EventDate = DateTime.UtcNow.AddMonths(4), VenueId = venue2.Id, Status = "Active" };
-
-            // Evento 5: "Megafestival Aniversario" — Venue 2 — todos los sectores (6)
-            var evento5 = new Event { Name = "Megafestival Aniversario",       EventDate = DateTime.UtcNow.AddMonths(5), VenueId = venue2.Id, Status = "Active" };
-
-            db.Events.AddRange(evento1, evento2, evento3, evento4, evento5);
-            db.SaveChanges();
-
-            // Sectores Evento 1 (Venue 1) — 2 sectores
-            // Name: nombre descriptivo del sector | Position: ubicacion fisica
-            var s1_platea  = new Sector { VenueId = venue1.Id, Name = "Platea General", Price = 5000,  Rows = 5, Cols = 10, Position = "center", Status = "Active" };
-            var s1_palco   = new Sector { VenueId = venue1.Id, Name = "Palco Preferencial", Price = 12000, Rows = 5, Cols = 10, Position = "front",  Status = "Active" };
-
-            // Sectores Evento 2 (Venue 2) — 5 sectores
-            var s2_palco   = new Sector { VenueId = venue2.Id, Name = "Palco Exclusivo",   Price = 25000, Rows = 2, Cols = 14, Position = "vip",    Status = "Active" };
-            var s2_platea  = new Sector { VenueId = venue2.Id, Name = "Platea Central",    Price = 15000, Rows = 6, Cols = 12, Position = "center", Status = "Active" };
-            var s2_tribuna = new Sector { VenueId = venue2.Id, Name = "Tribuna Frontal",   Price = 18000, Rows = 3, Cols = 10, Position = "front",  Status = "Active" };
-            var s2_graderia= new Sector { VenueId = venue2.Id, Name = "Gradería Trasera",  Price = 8000,  Rows = 4, Cols = 12, Position = "back",   Status = "Active" };
-            var s2_lateral = new Sector { VenueId = venue2.Id, Name = "Lateral Izquierdo", Price = 10000, Rows = 5, Cols = 8,  Position = "left",   Status = "Active" };
-
-            // Sectores Evento 3 (Venue 1) — 1 sector
-            var s3_palco   = new Sector { VenueId = venue1.Id, Name = "Palco Gala",        Price = 30000, Rows = 3, Cols = 10, Position = "vip",    Status = "Active" };
-
-            // Sectores Evento 4 (Venue 2) — 3 sectores
-            var s4_platea  = new Sector { VenueId = venue2.Id, Name = "Platea Jazz",       Price = 12000, Rows = 5, Cols = 14, Position = "center", Status = "Active" };
-            var s4_tribuna = new Sector { VenueId = venue2.Id, Name = "Tribuna Principal", Price = 16000, Rows = 4, Cols = 10, Position = "front",  Status = "Active" };
-            var s4_lateral = new Sector { VenueId = venue2.Id, Name = "Lateral Derecho",   Price = 9000,  Rows = 5, Cols = 8,  Position = "right",  Status = "Active" };
-
-            // Sectores Evento 5 (Venue 2) — todos los sectores (los 6 posibles)
-            var s5_palco   = new Sector { VenueId = venue2.Id, Name = "Palco Aniversario", Price = 28000, Rows = 2, Cols = 12, Position = "vip",    Status = "Active" };
-            var s5_platea  = new Sector { VenueId = venue2.Id, Name = "Platea Central",    Price = 14000, Rows = 7, Cols = 14, Position = "center", Status = "Active" };
-            var s5_tribuna = new Sector { VenueId = venue2.Id, Name = "Tribuna Frontal",   Price = 17000, Rows = 3, Cols = 12, Position = "front",  Status = "Active" };
-            var s5_graderia= new Sector { VenueId = venue2.Id, Name = "Gradería Trasera",  Price = 7000,  Rows = 5, Cols = 10, Position = "back",   Status = "Active" };
-            var s5_latIzq  = new Sector { VenueId = venue2.Id, Name = "Lateral Izquierdo", Price = 11000, Rows = 4, Cols = 8,  Position = "left",   Status = "Active" };
-            var s5_latDer  = new Sector { VenueId = venue2.Id, Name = "Lateral Derecho",   Price = 11000, Rows = 4, Cols = 8,  Position = "right",  Status = "Active" };
+            // Sectores Venue 3 - Sala Panorámica
+            var v3_vip    = new Sector { VenueId = venue3.Id, Position = "vip",    Name = "Palco Panorámico",  Price = 35000, Rows = 2, Cols = 14,  Status = "Active" };
+            var v3_front  = new Sector { VenueId = venue3.Id, Position = "front",  Name = "Platea Frontal",    Price = 20000, Rows = 3, Cols = 14, Status = "Active" };
+            var v3_center = new Sector { VenueId = venue3.Id, Position = "center", Name = "Platea Central",    Price = 17000, Rows = 5, Cols = 14, Status = "Active" };
+            var v3_left   = new Sector { VenueId = venue3.Id, Position = "left",   Name = "Lateral Izquierdo", Price = 14000, Rows = 5, Cols = 8,  Status = "Active" };
+            var v3_right  = new Sector { VenueId = venue3.Id, Position = "right",  Name = "Lateral Derecho",   Price = 14000, Rows = 5, Cols = 8,  Status = "Active" };
 
             db.Sectors.AddRange(
-                s1_platea, s1_palco,
-                s2_palco, s2_platea, s2_tribuna, s2_graderia, s2_lateral,
-                s3_palco,
-                s4_platea, s4_tribuna, s4_lateral,
-                s5_palco, s5_platea, s5_tribuna, s5_graderia, s5_latIzq, s5_latDer
+                v1_vip, v1_front, v1_center, v1_back,
+                v2_vip, v2_front, v2_center, v2_back, v2_left, v2_right,
+                v3_vip, v3_front, v3_center, v3_left, v3_right
             );
             db.SaveChanges();
 
-            // Generar butacas para todos los sectores (Rows x Cols)
+            // Eventos
+            db.Events.AddRange(
+                // Venue 1 - Estadio Nacional
+                new Event { Name = "Concierto de Rock",               EventDate = DateTime.UtcNow.AddMonths(2), VenueId = venue1.Id, Status = "Active" },
+                new Event { Name = "Gala de Premiación",              EventDate = DateTime.UtcNow.AddMonths(1), VenueId = venue1.Id, Status = "Active" },
+
+                // Venue 2 - Arena Central
+                new Event { Name = "Final Copa del Mundo de eSports", EventDate = DateTime.UtcNow.AddMonths(3), VenueId = venue2.Id, Status = "Active" },
+                new Event { Name = "Festival de Jazz",                 EventDate = DateTime.UtcNow.AddMonths(4), VenueId = venue2.Id, Status = "Active" },
+                new Event { Name = "Megafestival Aniversario",         EventDate = DateTime.UtcNow.AddMonths(5), VenueId = venue2.Id, Status = "Active" },
+
+                // Venue 3 - Sala Panorámica
+                new Event { Name = "Noche de Ópera",                  EventDate = DateTime.UtcNow.AddMonths(2), VenueId = venue3.Id, Status = "Active" },
+                new Event { Name = "Stand-Up Comedy Night",            EventDate = DateTime.UtcNow.AddMonths(3), VenueId = venue3.Id, Status = "Active" }
+            );
+            db.SaveChanges();
+
+            // Butacas
+            var allSectors = new[]
+            {
+                v1_vip, v1_front, v1_center, v1_back,
+                v2_vip, v2_front, v2_center, v2_back, v2_left, v2_right,
+                v3_vip, v3_front, v3_center, v3_left, v3_right
+            };
+
             var butacas = new List<Seat>();
-
-            butacas.AddRange(GenerarButacas(s1_platea));
-            butacas.AddRange(GenerarButacas(s1_palco));
-
-            butacas.AddRange(GenerarButacas(s2_palco));
-            butacas.AddRange(GenerarButacas(s2_platea));
-            butacas.AddRange(GenerarButacas(s2_tribuna));
-            butacas.AddRange(GenerarButacas(s2_graderia));
-            butacas.AddRange(GenerarButacas(s2_lateral));
-
-            butacas.AddRange(GenerarButacas(s3_palco));
-
-            butacas.AddRange(GenerarButacas(s4_platea));
-            butacas.AddRange(GenerarButacas(s4_tribuna));
-            butacas.AddRange(GenerarButacas(s4_lateral));
-
-            butacas.AddRange(GenerarButacas(s5_palco));
-            butacas.AddRange(GenerarButacas(s5_platea));
-            butacas.AddRange(GenerarButacas(s5_tribuna));
-            butacas.AddRange(GenerarButacas(s5_graderia));
-            butacas.AddRange(GenerarButacas(s5_latIzq));
-            butacas.AddRange(GenerarButacas(s5_latDer));
+            foreach (var sector in allSectors)
+                butacas.AddRange(GenerarButacas(sector));
 
             db.Seats.AddRange(butacas);
             db.SaveChanges();
@@ -123,10 +99,10 @@ namespace TicketingAPI.Data
                 {
                     butacas.Add(new Seat
                     {
-                        SectorId = sector.Id,
+                        SectorId      = sector.Id,
                         RowIdentifier = rowId,
-                        SeatNumber = col,
-                        Status = "Available"
+                        SeatNumber    = col,
+                        Status        = "Available"
                     });
                 }
             }
