@@ -13,10 +13,10 @@ namespace ProyectoSoftware_Ticketing.DTOs.Common
         /// <summary>
         /// Datos resultantes de la operación.
         /// </summary>
-        public T Data { get; set; }
+        public T Data { get; set; } = default(T)!;
         /// <summary>
         /// Mensaje de error en caso de que la operación haya fallado.
         /// </summary>
-        public string Error { get; set; }
+        public string Error { get; set; } = string.Empty;
     }
 }

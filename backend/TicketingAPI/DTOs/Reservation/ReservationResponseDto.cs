@@ -33,7 +33,7 @@ namespace ProyectoSoftware_Ticketing.DTOs.Reservation
         /// <summary>
         /// Estado actual de la reserva.
         /// </summary>
-        public string Status { get; set; }
+        public string Status { get; set; } = string.Empty;
         /// <summary>
         /// Fecha y hora en que se creó la reserva.
         /// </summary>

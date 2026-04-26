@@ -7,6 +7,7 @@ namespace TicketingAPI.Data
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
+        public DbSet<Venue> Venues { get; set; }
         public DbSet<Event> Events { get; set; }
         public DbSet<Sector> Sectors { get; set; }
         public DbSet<Seat> Seats { get; set; }
@@ -18,13 +19,25 @@ namespace TicketingAPI.Data
         {
             base.OnModelCreating(modelBuilder);
 
+            // Venue
+            modelBuilder.Entity<Venue>(entity =>
+            {
+                entity.HasKey(v => v.Id);
+                entity.Property(v => v.Name).IsRequired().HasMaxLength(200);
+                entity.Property(v => v.Status).IsRequired().HasDefaultValue("Active");
+            });
+
             // Event
             modelBuilder.Entity<Event>(entity =>
             {
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
-                entity.Property(e => e.Venue).IsRequired().HasMaxLength(200);
                 entity.Property(e => e.Status).IsRequired().HasDefaultValue("Active");
+
+                entity.HasOne(e => e.Venue)
+                      .WithMany(v => v.Events)
+                      .HasForeignKey(e => e.VenueId)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
 
             // Sector
@@ -33,10 +46,12 @@ namespace TicketingAPI.Data
                 entity.HasKey(s => s.Id);
                 entity.Property(s => s.Name).IsRequired().HasMaxLength(100);
                 entity.Property(s => s.Price).HasColumnType("decimal(10,2)");
+                entity.Property(s => s.Position).HasMaxLength(50);
+                entity.Property(s => s.Status).IsRequired().HasDefaultValue("Active");
 
-                entity.HasOne(s => s.Event)
-                      .WithMany(e => e.Sectors)
-                      .HasForeignKey(s => s.EventId)
+                entity.HasOne(s => s.Venue)
+                      .WithMany(v => v.Sectors)
+                      .HasForeignKey(s => s.VenueId)
                       .OnDelete(DeleteBehavior.Cascade);
             });
 

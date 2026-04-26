@@ -1,8 +1,19 @@
 using Microsoft.EntityFrameworkCore;
 using TicketingAPI.Data;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddControllers();
+// Configuración de servicios
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // Configura el serializador JSON para convertir los enums a sus representaciones 
+        // de cadena en lugar de números enteros.
+        // Esto es especialmente útil para el enum SeatStatusDto, ya que mejora la legibilidad de las respuestas JSON.
+        options.JsonSerializerOptions.Converters.Add(
+            new JsonStringEnumConverter()
+        );
+    });;
 // Generador nativo de .NET 10
 builder.Services.AddOpenApi();
 // Conexión a PostgreSQL con EF Core

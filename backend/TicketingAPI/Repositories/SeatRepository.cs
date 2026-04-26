@@ -25,9 +25,12 @@ namespace TicketingAPI.Repositories
         /// <returns>Colección de butacas (Seats).</returns>
         public async Task<IEnumerable<Seat>> GetSeatsByEventIdAsync(int eventId)
         {
+            var eventEntity = await _context.Events.FindAsync(eventId);
+            if (eventEntity == null) return new List<Seat>();
+
             return await _context.Seats
                 .Include(s => s.Sector)
-                .Where(s => s.Sector.EventId == eventId)
+                .Where(s => s.Sector.VenueId == eventEntity.VenueId)
                 .ToListAsync();
         }
 

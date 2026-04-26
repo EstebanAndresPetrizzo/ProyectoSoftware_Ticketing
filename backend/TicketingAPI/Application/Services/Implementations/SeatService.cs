@@ -12,6 +12,38 @@ namespace TicketingAPI.Application.Services.Implementations
             _unitOfWork = unitOfWork;
         }
 
+        public async Task<EventSeatMapDto> GetSeatMapByEventIdAsync(int eventId)
+        {
+            var evt = await _unitOfWork.Events.GetEventWithSeatMapAsync(eventId);
+
+            if (evt == null)
+                throw new ArgumentException("Evento no encontrado.");
+
+            return new EventSeatMapDto
+            {
+                EventId = evt.Id,
+                EventName = evt.Name,
+                VenueName = evt.Venue.Name,
+                Sectors = evt.Venue.Sectors.Select(sector => new SectorSeatMapDto
+                {
+                    SectorId = sector.Id,
+                    Name = sector.Name,
+                    Price = sector.Price,
+                    Rows = sector.Rows,
+                    Cols = sector.Cols,
+                    Position = sector.Position,
+                    Seats = sector.Seats.Select(seat => new SeatDto
+                    {
+                        Id = seat.Id,
+                        SectorId = seat.SectorId,
+                        Row = seat.RowIdentifier,
+                        Number = seat.SeatNumber,
+                        Status = ParseStatus(seat.Status)
+                    }).ToList()
+                }).ToList()
+            };
+        }
+
         public async Task<IEnumerable<SeatDto>> GetSeatsByEventIdAsync(int eventId)
         {
             var seats = await _unitOfWork.Seats.GetSeatsByEventIdAsync(eventId);

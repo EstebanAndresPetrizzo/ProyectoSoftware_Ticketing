@@ -6,5 +6,6 @@ namespace TicketingAPI.Repositories
     {
         Task<IEnumerable<Event>> GetAllEventsAsync();
         Task<Event?> GetEventByIdAsync(int id);
+        Task<Event?> GetEventWithSeatMapAsync(int eventId);
     }
 }

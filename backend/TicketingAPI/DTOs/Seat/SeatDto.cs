@@ -19,7 +19,7 @@ namespace ProyectoSoftware_Ticketing.DTOs.Seat
         /// <summary>
         /// Fila a la que pertenece el asiento.
         /// </summary>
-        public string Row { get; set; }
+        public string Row { get; set; } = string.Empty;
         /// <summary>
         /// Número del asiento dentro de su fila.
         /// </summary>
@@ -28,6 +28,6 @@ namespace ProyectoSoftware_Ticketing.DTOs.Seat
         /// <summary>
         /// Estado actual del asiento.
         /// </summary>
-        public SeatStatusDto Status { get; set; }
+        public SeatStatusDto Status { get; set; } = new SeatStatusDto();
     }
 }

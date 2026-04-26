@@ -13,22 +13,6 @@ namespace TicketingAPI.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Events",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    EventDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Venue = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    Status = table.Column<string>(type: "text", nullable: false, defaultValue: "Active")
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Events", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
@@ -43,25 +27,18 @@ namespace TicketingAPI.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Sectors",
+                name: "Venues",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    EventId = table.Column<int>(type: "integer", nullable: false),
-                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    Price = table.Column<decimal>(type: "numeric(10,2)", nullable: false),
+                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Status = table.Column<string>(type: "text", nullable: false, defaultValue: "Active"),
                     Capacity = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Sectors", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Sectors_Events_EventId",
-                        column: x => x.EventId,
-                        principalTable: "Events",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                    table.PrimaryKey("PK_Venues", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -85,6 +62,53 @@ namespace TicketingAPI.Migrations
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.SetNull);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Events",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    EventDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    VenueId = table.Column<int>(type: "integer", nullable: false),
+                    Status = table.Column<string>(type: "text", nullable: false, defaultValue: "Active")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Events", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Events_Venues_VenueId",
+                        column: x => x.VenueId,
+                        principalTable: "Venues",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Sectors",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    VenueId = table.Column<int>(type: "integer", nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Price = table.Column<decimal>(type: "numeric(10,2)", nullable: false),
+                    Rows = table.Column<int>(type: "integer", nullable: false),
+                    Cols = table.Column<int>(type: "integer", nullable: false),
+                    Position = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Status = table.Column<string>(type: "text", nullable: false, defaultValue: "Active")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Sectors", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Sectors_Venues_VenueId",
+                        column: x => x.VenueId,
+                        principalTable: "Venues",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -144,6 +168,11 @@ namespace TicketingAPI.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Events_VenueId",
+                table: "Events",
+                column: "VenueId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Reservations_SeatId",
                 table: "Reservations",
                 column: "SeatId",
@@ -160,9 +189,9 @@ namespace TicketingAPI.Migrations
                 column: "SectorId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Sectors_EventId",
+                name: "IX_Sectors_VenueId",
                 table: "Sectors",
-                column: "EventId");
+                column: "VenueId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_Email",
@@ -178,6 +207,9 @@ namespace TicketingAPI.Migrations
                 name: "AuditLogs");
 
             migrationBuilder.DropTable(
+                name: "Events");
+
+            migrationBuilder.DropTable(
                 name: "Reservations");
 
             migrationBuilder.DropTable(
@@ -190,7 +222,7 @@ namespace TicketingAPI.Migrations
                 name: "Sectors");
 
             migrationBuilder.DropTable(
-                name: "Events");
+                name: "Venues");
         }
     }
 }
