@@ -66,7 +66,7 @@ async function openEvent(eventId) {
   $("view-catalog").classList.add("hidden");
   $("view-seats").classList.remove("hidden");
 
-  const events = await api.listEvents();
+  const { events } = await api.listEvents();
   const evt = events.find(e => e.id === state.eventId);
 
   $("event-title").textContent = evt.title;
