@@ -42,15 +42,16 @@ namespace TicketingAPI.Data
             var v2_right  = new Sector { VenueId = venue2.Id, Position = "right",  Name = "Lateral Derecho",   Price = 10000, Rows = 4, Cols = 10, Status = "Active" };
 
             // Sectores Venue 3 - Sala Panorámica
-            var v3_vip    = new Sector { VenueId = venue3.Id, Position = "vip",    Name = "Palco Panorámico",  Price = 35000, Rows = 2, Cols = 8,  Status = "Active" };
-            var v3_front  = new Sector { VenueId = venue3.Id, Position = "front",  Name = "Platea Frontal",    Price = 20000, Rows = 3, Cols = 10, Status = "Active" };
-            var v3_left   = new Sector { VenueId = venue3.Id, Position = "left",   Name = "Lateral Izquierdo", Price = 14000, Rows = 3, Cols = 8,  Status = "Active" };
-            var v3_right  = new Sector { VenueId = venue3.Id, Position = "right",  Name = "Lateral Derecho",   Price = 14000, Rows = 3, Cols = 8,  Status = "Active" };
+            var v3_vip    = new Sector { VenueId = venue3.Id, Position = "vip",    Name = "Palco Panorámico",  Price = 35000, Rows = 2, Cols = 14,  Status = "Active" };
+            var v3_front  = new Sector { VenueId = venue3.Id, Position = "front",  Name = "Platea Frontal",    Price = 20000, Rows = 3, Cols = 14, Status = "Active" };
+            var v3_center = new Sector { VenueId = venue3.Id, Position = "center", Name = "Platea Central",    Price = 17000, Rows = 5, Cols = 14, Status = "Active" };
+            var v3_left   = new Sector { VenueId = venue3.Id, Position = "left",   Name = "Lateral Izquierdo", Price = 14000, Rows = 5, Cols = 8,  Status = "Active" };
+            var v3_right  = new Sector { VenueId = venue3.Id, Position = "right",  Name = "Lateral Derecho",   Price = 14000, Rows = 5, Cols = 8,  Status = "Active" };
 
             db.Sectors.AddRange(
                 v1_vip, v1_front, v1_center, v1_back,
                 v2_vip, v2_front, v2_center, v2_back, v2_left, v2_right,
-                v3_vip, v3_front, v3_left, v3_right
+                v3_vip, v3_front, v3_center, v3_left, v3_right
             );
             db.SaveChanges();
 
@@ -76,7 +77,7 @@ namespace TicketingAPI.Data
             {
                 v1_vip, v1_front, v1_center, v1_back,
                 v2_vip, v2_front, v2_center, v2_back, v2_left, v2_right,
-                v3_vip, v3_front, v3_left, v3_right
+                v3_vip, v3_front, v3_center, v3_left, v3_right
             };
 
             var butacas = new List<Seat>();
