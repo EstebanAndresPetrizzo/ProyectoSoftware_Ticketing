@@ -18,8 +18,18 @@ namespace ProyectoSoftware_Ticketing.DTOs.Sector
         /// </summary>
         public decimal Price { get; set; }
         /// <summary>
-        /// Capacidad máxima de entradas para el sector.
+        /// Número de filas en el sector.
         /// </summary>
-        public int Capacity { get; set; }
+        public int Rows { get; set; }
+        
+        /// <summary>
+        /// Número de columnas por fila en el sector.
+        /// </summary>
+        public int Cols { get; set; }
+
+        /// <summary>
+        /// Posición del sector dentro del recinto (ej. Center, Sides).
+        /// </summary>
+        public string Position { get; set; }
     }
 }
