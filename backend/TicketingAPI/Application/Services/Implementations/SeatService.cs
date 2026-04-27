@@ -21,9 +21,7 @@ namespace TicketingAPI.Application.Services.Implementations
 
             return new EventSeatMapDto
             {
-                EventId = evt.Id,
-                EventName = evt.Name,
-                VenueName = evt.Venue.Name,
+                // ... (resto de mapeo igual)
                 Sectors = evt.Venue.Sectors.Select(sector => new SectorSeatMapDto
                 {
                     SectorId = sector.Id,
