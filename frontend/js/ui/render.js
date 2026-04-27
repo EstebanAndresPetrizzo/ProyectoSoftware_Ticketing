@@ -18,7 +18,7 @@ export function renderCatalog(
     <div class="grid sm:grid-cols-2 gap-4 mb-6">
       ${events.map(e => `
         <article
-          class="border border-slate-200 rounded-lg p-4 hover:border-blue-400 hover:shadow-md transition cursor-pointer"
+          class="border border-slate-200 rounded-lg p-4 hover:shadow-md transition cursor-pointer event-card event-card:hover"
           data-event-id="${e.id}"
         >
           <h3 class="font-semibold text-lg">${e.name}</h3>
@@ -226,39 +226,6 @@ export function renderStadium(container, eventState, selected, onSeatClick) {
       ).join("")}
     </div>
   `;
-  container.innerHTML = `
-    <div class="stadium-container">
-      <div class="stage-area">🎤 ESCENARIO</div>
-      <div class="layout-grid">
-        <div class="side-column left-side">
-          ${sectorsByPosition.left.map(s => renderSector(s, selected)).join("")}
-        </div>
-        <div class="center-column">
-          ${sectorsByPosition.vip.map(s => renderSector(s, selected)).join("")}
-          ${sectorsByPosition.front.map(s => renderSector(s, selected)).join("")}
-          ${sectorsByPosition.center.map(s => renderSector(s, selected)).join("")}
-        </div>
-        <div class="side-column right-side">
-          ${sectorsByPosition.right.map(s => renderSector(s, selected)).join("")}
-        </div>
-      </div>
-      <div class="back-area">
-        ${sectorsByPosition.back.map(s => renderSector(s, selected)).join("")}
-      </div>
-    </div>
-  `;
-/*
-  // 🔥 FIX IMPORTANTE: event delegation (MUY estable)
-  container.addEventListener("click", (e) => {
-    const btn = e.target.closest("[data-seat-id]");
-    if (!btn) return;
-
-    const seatId = Number(btn.dataset.seatId);
-    if (Number.isNaN(seatId)) return;
-
-    onSeatClick(seatId);
-  });
-  */
 }
 
 export function renderSelection(listEl, totalEl, buyBtn, selected, seatMap) {
