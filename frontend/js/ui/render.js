@@ -226,6 +226,27 @@ export function renderStadium(container, eventState, selected, onSeatClick) {
       ).join("")}
     </div>
   `;
+  container.innerHTML = `
+    <div class="stadium-container">
+      <div class="stage-area">🎤 ESCENARIO</div>
+      <div class="layout-grid">
+        <div class="side-column left-side">
+          ${sectorsByPosition.left.map(s => renderSector(s, selected)).join("")}
+        </div>
+        <div class="center-column">
+          ${sectorsByPosition.vip.map(s => renderSector(s, selected)).join("")}
+          ${sectorsByPosition.front.map(s => renderSector(s, selected)).join("")}
+          ${sectorsByPosition.center.map(s => renderSector(s, selected)).join("")}
+        </div>
+        <div class="side-column right-side">
+          ${sectorsByPosition.right.map(s => renderSector(s, selected)).join("")}
+        </div>
+      </div>
+      <div class="back-area">
+        ${sectorsByPosition.back.map(s => renderSector(s, selected)).join("")}
+      </div>
+    </div>
+  `;
 /*
   // 🔥 FIX IMPORTANTE: event delegation (MUY estable)
   container.addEventListener("click", (e) => {

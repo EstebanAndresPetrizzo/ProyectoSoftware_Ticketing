@@ -1,5 +1,6 @@
 import { api } from "./api/api.js";
 import { renderCatalog, renderStadium, renderSelection } from "./ui/render.js";
+import { formatDateTime } from "./mappers/seatMapMapper.js";
 
 const state = {
   eventId: null,
@@ -78,8 +79,8 @@ async function openEvent(eventId) {
   const { events } = await api.listEvents();
   const evt = events.find(e => e.id === state.eventId);
 
-  $("event-title").textContent = evt.title;
-  $("event-meta").textContent = `📅 ${evt.date} · 📍 ${evt.venue}`;
+  $("event-title").textContent = evt.name;
+  $("event-meta").textContent = `📅 ${formatDateTime(evt.date)} · 📍 ${evt.venue}`;
 
   await refreshSeats();
 
