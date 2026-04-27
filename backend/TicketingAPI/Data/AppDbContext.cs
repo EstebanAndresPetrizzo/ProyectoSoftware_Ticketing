@@ -82,24 +82,28 @@ namespace TicketingAPI.Data
                 entity.HasIndex(u => u.Email).IsUnique();
             });
 
-            // Reservation
+            // Relación Seat (1) → Reservations (N)
             modelBuilder.Entity<Reservation>(entity =>
             {
                 entity.HasKey(r => r.Id);
                 entity.Property(r => r.Status).IsRequired().HasDefaultValue("Pending");
 
-                // Relación Reservation → User 
                 entity.HasOne(r => r.User)
-                      .WithMany(u => u.Reservations)
-                      .HasForeignKey(r => r.UserId)
-                      .OnDelete(DeleteBehavior.Restrict);
+                    .WithMany(u => u.Reservations)
+                    .HasForeignKey(r => r.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
 
-                // Relación Seat → Reservation
+                // CAMBIA ESTE BLOQUE:
                 entity.HasOne(r => r.Seat)
-                      .WithOne(s => s.Reservation)
-                      .HasForeignKey<Reservation>(r => r.SeatId)
-                      .IsRequired(false)
-                      .OnDelete(DeleteBehavior.Restrict);
+                    .WithMany(s => s.Reservations) // Antes decía .WithOne(s => s.Reservation)
+                    .HasForeignKey(r => r.SeatId)
+                    .IsRequired(false)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(r => r.Event)
+                    .WithMany(e => e.Reservations)
+                    .HasForeignKey(r => r.EventId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             // AuditLog

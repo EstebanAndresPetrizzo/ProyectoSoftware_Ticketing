@@ -14,16 +14,18 @@ namespace TicketingAPI.Application.Services.Implementations
 
         public async Task<EventSeatMapDto> GetSeatMapByEventIdAsync(int eventId)
         {
+            // 1. Traemos el evento con TODA su jerarquía desde el Repositorio
             var evt = await _unitOfWork.Events.GetEventWithSeatMapAsync(eventId);
+            if (evt == null) throw new ArgumentException("Evento no encontrado.");
 
-            if (evt == null)
-                throw new ArgumentException("Evento no encontrado.");
+            var now = DateTime.UtcNow;
 
+            // 2. Mapeamos manualmente cada propiedad del DTO
             return new EventSeatMapDto
             {
                 EventId = evt.Id,
                 EventName = evt.Name,
-                VenueName = evt.Venue.Name,
+                VenueName = evt.Venue?.Name ?? "Estadio Desconocido",
                 Sectors = evt.Venue.Sectors.Select(sector => new SectorSeatMapDto
                 {
                     SectorId = sector.Id,
@@ -38,11 +40,33 @@ namespace TicketingAPI.Application.Services.Implementations
                         SectorId = seat.SectorId,
                         Row = seat.RowIdentifier,
                         Number = seat.SeatNumber,
-                        Status = ParseStatus(seat.Status)
+                        // Aquí calculamos el estado dinámico basado en las reservas
+                        Status = DetermineRealStatus(seat, eventId, now)
                     }).ToList()
                 }).ToList()
             };
         }
+
+        private SeatStatusDto DetermineRealStatus(TicketingAPI.Models.Seat seat, int eventId, DateTime now)
+            {
+                // Buscamos si hay alguna reserva activa para este evento
+                var activeReservation = seat.Reservations
+                    .FirstOrDefault(r => r.EventId == eventId && r.Status != "Expired");
+
+                if (activeReservation == null) return SeatStatusDto.Available;
+
+                if (activeReservation.Status == "Paid") return SeatStatusDto.Sold;
+
+                if (activeReservation.Status == "Pending")
+                {
+                    // Si es Pending pero ya pasaron los 5 minutos... ¡está disponible!
+                    return activeReservation.ExpiresAt > now 
+                        ? SeatStatusDto.Reserved 
+                        : SeatStatusDto.Available;
+                }
+
+                return SeatStatusDto.Available;
+            }
 
         public async Task<IEnumerable<SeatDto>> GetSeatsByEventIdAsync(int eventId)
         {

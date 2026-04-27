@@ -1,5 +1,6 @@
 using TicketingAPI.Data;
 using TicketingAPI.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace TicketingAPI.Repositories
 {
@@ -24,6 +25,20 @@ namespace TicketingAPI.Repositories
         public async Task AddReservationAsync(Reservation reservation)
         {
             await _context.Reservations.AddAsync(reservation);
+        }
+        /// <summary>
+        /// Verifica si existe alguna reserva activa (pagada o pendiente no expirada) para una butaca y evento específicos.
+        /// Esto se utiliza para validar la disponibilidad real de una butaca antes de crear una nueva reserva.
+        /// </summary> 
+
+        public async Task<bool> AnyActiveReservationAsync(int seatId, int eventId)
+        {
+            var now = DateTime.UtcNow;
+
+            return await _context.Reservations
+                .AnyAsync(r => r.SeatId == seatId 
+                            && r.EventId == eventId 
+                            && (r.Status == "Paid" || (r.Status == "Pending" && r.ExpiresAt > now)));
         }
     }
 }

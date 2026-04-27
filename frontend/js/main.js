@@ -21,6 +21,15 @@ async function init() {
 
   $("btn-back").addEventListener("click", backToCatalog);
   $("btn-buy").addEventListener("click", confirmPurchase);
+  $("stadium-map").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-seat-id]");
+    if (!btn) return;
+    
+    const seatId = Number(btn.dataset.seatId);
+    if (!isNaN(seatId)) {
+      onSeatClick(seatId);
+    }
+  });
 }
 
 async function loadCatalog() {
@@ -97,71 +106,55 @@ function backToCatalog() {
 
 async function refreshSeats() {
   state.eventState = await api.getSeats(state.eventId);
-
   const allSeats = state.eventState.sectors.flatMap(s => s.seats);
 
   state.selected = state.selected.filter(sel => {
     const seat = allSeats.find(s => s.id === sel.seatId);
-
-    return (
-      seat &&
-      seat.status.toLowerCase() === "reserved"
-    );
+    if (!seat) return false;
+    const status = seat.status.toLowerCase();
+    // Aceptamos ambos para que no se borren del carrito
+    return (status === "reserved" || status === "pending");
   });
 
-  renderStadium(
-    $("stadium-map"),
-    state.eventState,
-    state.selected,
-    onSeatClick
-  );
-
+  renderStadium($("stadium-map"), state.eventState, state.selected, onSeatClick);
   updateSelectionUI();
   updateCountdown();
 }
 
 async function onSeatClick(seatId) {
-  const alreadySelected = state.selected.find(
-    s => s.seatId === seatId
-  );
+  const alreadySelected = state.selected.find(s => s.seatId === seatId);
 
   if (alreadySelected) {
-    await api.releaseSeat(state.eventId, seatId);
-
-    state.selected = state.selected.filter(
-      s => s.seatId !== seatId
-    );
-
+    state.selected = state.selected.filter(s => s.seatId !== seatId);
     await refreshSeats();
     return;
   }
 
   try {
-    // 🔥 buscar sector correcto del asiento
     let foundSectorId = null;
-
+    // Buscamos a qué sector pertenece el asiento que tocamos
     for (const sector of state.eventState.sectors) {
       const seat = sector.seats.find(s => s.id === seatId);
-
-      if (seat) {
-        foundSectorId = seat.sectorId;
-        break;
+      if (seat) { 
+        foundSectorId = sector.id || sector.sectorId; // Ajusta según el nombre en tu JSON
+        break; 
       }
     }
 
-    if (!foundSectorId) {
-      throw new Error("No se encontró el sector del asiento");
-    }
+    if (!foundSectorId) throw new Error("No se encontró el sector del asiento");
 
-    const result = await api.reserveSeat(
-      state.eventId,
-      foundSectorId,
-      seatId
-    );
+    // 1. Llamamos a la API para reservar en la DB
+    const response = await api.reserveSeat(state.eventId, foundSectorId, seatId);
+    const reservationData = response.data; 
 
+    // 2. Calculamos la expiración (5 min)
+    const reservedUntil = new Date(reservationData.createdAt).getTime() + (5 * 60 * 1000);
+
+    // 3. ACTUALIZADO: Guardamos TODO en el estado (incluyendo el sectorId)
     state.selected.push({
       seatId,
-      reservedUntil: result.reservedUntil
+      sectorId: foundSectorId,
+      reservedUntil: reservedUntil 
     });
 
     await refreshSeats();

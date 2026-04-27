@@ -9,6 +9,7 @@ namespace TicketingAPI.Models
         public string Status { get; set; } = "Available";
         public uint Version { get; set; }
         public Sector Sector { get; set; } = null!;
-        public Reservation? Reservation { get; set; }
+        // Relación inversa para reservas (una silla puede tener 0 o 1 reserva activa)
+        public ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
     }
 }

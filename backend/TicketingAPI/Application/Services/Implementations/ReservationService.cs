@@ -27,27 +27,25 @@ namespace TicketingAPI.Application.Services.Implementations
                 throw new ArgumentException("El asiento no pertenece al sector especificado.");
             }
 
-            if (seat.Status != "Available")
+            var isTaken = await _unitOfWork.Reservations.AnyActiveReservationAsync(seat.Id, request.EventId);
+            if (isTaken)
             {
-                throw new InvalidOperationException("El asiento ya no está disponible.");
+                throw new InvalidOperationException("El asiento ya no está disponible o tiene una reserva pendiente.");
             }
 
-            // 1. Cambiar estado de la butaca
-            seat.Status = "Reserved";
-            await _unitOfWork.Seats.UpdateSeatAsync(seat);
-
-            // 2. Crear modelo Reservation
+            // 1. Crear modelo Reservation
             var reservation = new Reservation
             {
                 SeatId = seat.Id,
-                UserId = request.UserId, // Tomamos el Guid real que viene del frontend
+                EventId = request.EventId,
+                UserId = request.UserId,
                 Status = "Pending",
                 ReservedAt = DateTime.UtcNow,
-                ExpiresAt = DateTime.UtcNow.AddMinutes(5) // Expiración en 5 minutos para el Background Job
+                ExpiresAt = DateTime.UtcNow.AddMinutes(5)
             };
             await _unitOfWork.Reservations.AddReservationAsync(reservation);
 
-            // 3. Crear log de auditoría
+            // 2. Crear log de auditoría
             var auditLog = new AuditLog
             {
                 UserId = request.UserId,
@@ -59,7 +57,7 @@ namespace TicketingAPI.Application.Services.Implementations
             };
             await _unitOfWork.AuditLogs.AddAuditLogAsync(auditLog);
 
-            // 4. Persistir todo en la BD
+            // 3. Persistir todo en la BD
             await _unitOfWork.CompleteAsync();
 
             return new ReservationResponseDto

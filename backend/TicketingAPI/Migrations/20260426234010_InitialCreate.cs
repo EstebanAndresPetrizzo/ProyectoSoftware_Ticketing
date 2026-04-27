@@ -141,6 +141,7 @@ namespace TicketingAPI.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     SeatId = table.Column<int>(type: "integer", nullable: true),
+                    EventId = table.Column<int>(type: "integer", nullable: false),
                     Status = table.Column<string>(type: "text", nullable: false, defaultValue: "Pending"),
                     ReservedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     ExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
@@ -148,6 +149,12 @@ namespace TicketingAPI.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Reservations", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Reservations_Events_EventId",
+                        column: x => x.EventId,
+                        principalTable: "Events",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Reservations_Seats_SeatId",
                         column: x => x.SeatId,
@@ -173,10 +180,14 @@ namespace TicketingAPI.Migrations
                 column: "VenueId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Reservations_EventId",
+                table: "Reservations",
+                column: "EventId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Reservations_SeatId",
                 table: "Reservations",
-                column: "SeatId",
-                unique: true);
+                column: "SeatId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Reservations_UserId",
@@ -207,10 +218,10 @@ namespace TicketingAPI.Migrations
                 name: "AuditLogs");
 
             migrationBuilder.DropTable(
-                name: "Events");
+                name: "Reservations");
 
             migrationBuilder.DropTable(
-                name: "Reservations");
+                name: "Events");
 
             migrationBuilder.DropTable(
                 name: "Seats");
