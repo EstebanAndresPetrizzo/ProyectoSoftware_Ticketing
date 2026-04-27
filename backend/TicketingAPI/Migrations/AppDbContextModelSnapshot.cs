@@ -123,8 +123,7 @@ namespace TicketingAPI.Migrations
 
                     b.HasIndex("EventId");
 
-                    b.HasIndex("SeatId")
-                        .IsUnique();
+                    b.HasIndex("SeatId");
 
                     b.HasIndex("UserId");
 
@@ -297,8 +296,8 @@ namespace TicketingAPI.Migrations
                         .IsRequired();
 
                     b.HasOne("TicketingAPI.Models.Seat", "Seat")
-                        .WithOne("Reservation")
-                        .HasForeignKey("TicketingAPI.Models.Reservation", "SeatId")
+                        .WithMany("Reservations")
+                        .HasForeignKey("SeatId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TicketingAPI.Models.User", "User")
@@ -343,7 +342,7 @@ namespace TicketingAPI.Migrations
 
             modelBuilder.Entity("TicketingAPI.Models.Seat", b =>
                 {
-                    b.Navigation("Reservation");
+                    b.Navigation("Reservations");
                 });
 
             modelBuilder.Entity("TicketingAPI.Models.Sector", b =>

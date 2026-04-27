@@ -226,7 +226,7 @@ export function renderStadium(container, eventState, selected, onSeatClick) {
       ).join("")}
     </div>
   `;
-
+/*
   // 🔥 FIX IMPORTANTE: event delegation (MUY estable)
   container.addEventListener("click", (e) => {
     const btn = e.target.closest("[data-seat-id]");
@@ -237,6 +237,7 @@ export function renderStadium(container, eventState, selected, onSeatClick) {
 
     onSeatClick(seatId);
   });
+  */
 }
 
 export function renderSelection(listEl, totalEl, buyBtn, selected, seatMap) {

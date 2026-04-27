@@ -62,9 +62,10 @@ namespace TicketingAPI.Repositories
         public async Task<Event?> GetEventWithSeatMapAsync(int eventId)
         {
             return await _context.Events
-                .Include(e => e.Venue)
-                    .ThenInclude(v => v.Sectors)
-                        .ThenInclude(s => s.Seats)
+                .Include(e => e.Venue)                       // Carga el lugar
+                    .ThenInclude(v => v.Sectors)             // Carga los sectores del lugar
+                        .ThenInclude(s => s.Seats)           // Carga los asientos de cada sector
+                            .ThenInclude(st => st.Reservations) // Carga las reservas para calcular el estado
                 .FirstOrDefaultAsync(e => e.Id == eventId);
         }
     }

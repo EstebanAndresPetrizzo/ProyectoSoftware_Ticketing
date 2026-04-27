@@ -187,8 +187,7 @@ namespace TicketingAPI.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Reservations_SeatId",
                 table: "Reservations",
-                column: "SeatId",
-                unique: true);
+                column: "SeatId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Reservations_UserId",

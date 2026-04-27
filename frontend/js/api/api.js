@@ -59,5 +59,28 @@ export const api = {
     }
 
     return await res.json();
+  },
+
+  async releaseSeat(eventId, sectorId, seatId) {
+    const res = await fetch(`${BASE_URL}/reservations`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        eventId: Number(eventId),
+        sectorId: Number(sectorId),
+        seatId: Number(seatId),
+        userId: "11111111-1111-1111-1111-111111111111"
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || "No se pudo liberar la butaca");
+    }
+
+    return await res.json();
   }
+
 };
