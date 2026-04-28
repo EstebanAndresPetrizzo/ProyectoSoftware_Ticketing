@@ -11,11 +11,11 @@ export function renderCatalog(
   container.innerHTML = `
   <div class="flex justify-between items-center mb-4">
   </div>
-    <h2 class="text-2xl font-bold mb-4">
+    <h2 class="text-2xl font-bold mb-4 text-center">
       Eventos disponibles
     </h2>
 
-    <div class="grid sm:grid-cols-2 gap-4 mb-6">
+    <div class="grid sm:grid-cols-2 gap-4 mb-6 main-panel">
       ${events.map(e => `
         <article
           class="border border-slate-200 rounded-lg p-4 hover:shadow-md transition cursor-pointer event-card event-card:hover"

@@ -12,6 +12,25 @@
   --stage: #0f172a;
 }
 
+body {
+  margin: 0;
+  background: linear-gradient(
+    180deg,
+    #e7f0f8 0%,
+    #c3dbf8 100%
+  );
+  min-height: 100vh;
+  font-family: sans-serif;
+}
+
+.main-panel {
+  background: #c3dbf8;
+  border: 1px solid #dbe3ef;
+  border-radius: 18px;
+  padding: 24px;
+  backdrop-filter: blur(8px);
+}
+
 /* =========================================
    LAYOUT & GRID
    ========================================= */
@@ -35,17 +54,17 @@
 .event-card:hover {
   background: linear-gradient(
     135deg,
-    rgb(130, 123, 144) 0%,
-    rgba(139, 116, 176, 0.484) 50%,
-    rgb(233, 237, 243) 100%
+    #b6c8e6 0%,
+    #9db7de 50%,
+    #86a6d6 100%
   );
 
-  border-color: #cbd5e1;
+  border-color: #8fa9d3;
 
   transform: translateY(-4px);
 
   box-shadow:
-    0 12px 24px rgba(15, 23, 42, 0.08);
+    0 12px 24px rgba(30, 64, 175, 0.12);
 }
 
 .map-grid {
