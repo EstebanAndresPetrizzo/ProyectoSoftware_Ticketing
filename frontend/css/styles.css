@@ -7,15 +7,66 @@
   --reserved: #f59e0b;
   --sold: #dc2626;
   --selected: #2563eb;
-  --vip: #a855f7;
   
   /* Map Elements */
   --stage: #0f172a;
 }
 
+body {
+  margin: 0;
+  background: linear-gradient(
+    180deg,
+    #e7f0f8 0%,
+    #c3dbf8 100%
+  );
+  min-height: 100vh;
+  font-family: sans-serif;
+}
+
+.main-panel {
+  background: #c3dbf8;
+  border: 1px solid #dbe3ef;
+  border-radius: 18px;
+  padding: 24px;
+  backdrop-filter: blur(8px);
+}
+
 /* =========================================
    LAYOUT & GRID
    ========================================= */
+
+.event-card {
+  background: rgb(255, 255, 255);
+  border: 1px solid #dbe3ef00;
+  border-radius: 20px;
+  padding: 20px;
+
+  transition:
+    /* Agrega una transición suave para el hover */
+    transform 0.80s ease,
+    box-shadow 0.80s ease,
+    background 0.80s ease,
+    border-color 0.80s ease;
+
+  cursor: pointer;
+}
+
+.event-card:hover {
+  background: linear-gradient(
+    135deg,
+    #b6c8e6 0%,
+    #9db7de 50%,
+    #86a6d6 100%
+  );
+
+  border-color: #8fa9d3;
+
+  transform: translateY(-4px);
+
+  box-shadow:
+    0 12px 24px rgba(30, 64, 175, 0.12);
+}
+
 .map-grid {
   display: grid;
   grid-template-columns: auto 1fr auto;

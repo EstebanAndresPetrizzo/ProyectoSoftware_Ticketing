@@ -1,4 +1,5 @@
 // Renderiza catálogo y mapa de asientos basado en backend real.
+import { formatDateTime } from "../mappers/seatMapMapper.js";
 
 export function renderCatalog(
   container,
@@ -11,18 +12,18 @@ export function renderCatalog(
   container.innerHTML = `
   <div class="flex justify-between items-center mb-4">
   </div>
-    <h2 class="text-2xl font-bold mb-4">
+    <h2 class="text-2xl font-bold mb-4 text-center">
       Eventos disponibles
     </h2>
 
-    <div class="grid sm:grid-cols-2 gap-4 mb-6">
+    <div class="grid sm:grid-cols-2 gap-4 mb-6 main-panel">
       ${events.map(e => `
         <article
-          class="border border-slate-200 rounded-lg p-4 hover:border-blue-400 hover:shadow-md transition cursor-pointer"
+          class="border border-slate-200 rounded-lg p-4 hover:shadow-md transition cursor-pointer event-card event-card:hover"
           data-event-id="${e.id}"
         >
           <h3 class="font-semibold text-lg">${e.name}</h3>
-          <p class="text-sm text-slate-500 mt-1">📅 ${e.date}</p>
+          <p class="text-sm text-slate-500 mt-1">📅 ${formatDateTime(e.date)}</p>
           <p class="text-sm text-slate-500">📍 ${e.venue}</p>
           <button class="mt-3 text-sm text-blue-600 font-medium hover:underline">
             Elegir butacas →
@@ -226,18 +227,6 @@ export function renderStadium(container, eventState, selected, onSeatClick) {
       ).join("")}
     </div>
   `;
-/*
-  // 🔥 FIX IMPORTANTE: event delegation (MUY estable)
-  container.addEventListener("click", (e) => {
-    const btn = e.target.closest("[data-seat-id]");
-    if (!btn) return;
-
-    const seatId = Number(btn.dataset.seatId);
-    if (Number.isNaN(seatId)) return;
-
-    onSeatClick(seatId);
-  });
-  */
 }
 
 export function renderSelection(listEl, totalEl, buyBtn, selected, seatMap) {
