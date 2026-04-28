@@ -1,4 +1,5 @@
 // Renderiza catálogo y mapa de asientos basado en backend real.
+import { formatDateTime } from "../mappers/seatMapMapper.js";
 
 export function renderCatalog(
   container,
@@ -22,7 +23,7 @@ export function renderCatalog(
           data-event-id="${e.id}"
         >
           <h3 class="font-semibold text-lg">${e.name}</h3>
-          <p class="text-sm text-slate-500 mt-1">📅 ${e.date}</p>
+          <p class="text-sm text-slate-500 mt-1">📅 ${formatDateTime(e.date)}</p>
           <p class="text-sm text-slate-500">📍 ${e.venue}</p>
           <button class="mt-3 text-sm text-blue-600 font-medium hover:underline">
             Elegir butacas →
