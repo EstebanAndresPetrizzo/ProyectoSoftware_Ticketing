@@ -159,6 +159,7 @@ function renderSector(sector, selected) {
       );
 
       const status = normalizeSeatStatus(seat.status);
+      const isMine = Boolean(seat.isMine);
 
       colsHtml.push(`
         <button
@@ -169,7 +170,7 @@ function renderSector(sector, selected) {
           )}"
           data-seat-id="${seat.id}"
           aria-label="${sector.name} fila ${seat.row} asiento ${seat.number}"
-          ${status !== "available" && !isSelected ? "disabled" : ""}
+          ${status !== "available" && !isSelected && !isMine ? "disabled" : ""}
         >
           ${seatIcon(seat, isSelected)}
         </button>

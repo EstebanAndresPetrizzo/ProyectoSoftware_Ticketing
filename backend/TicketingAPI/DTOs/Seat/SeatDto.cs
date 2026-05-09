@@ -29,5 +29,15 @@ namespace ProyectoSoftware_Ticketing.DTOs.Seat
         /// Estado actual del asiento.
         /// </summary>
         public SeatStatusDto Status { get; set; } = new SeatStatusDto();
+
+        /// <summary>
+        /// True si la reserva pendiente activa pertenece al usuario consultado (query userId).
+        /// </summary>
+        public bool IsMine { get; set; }
+
+        /// <summary>
+        /// Si <see cref="IsMine"/> y la reserva está pendiente, fecha UTC de expiración del bloqueo.
+        /// </summary>
+        public DateTime? MyPendingExpiresAtUtc { get; set; }
     }
 }

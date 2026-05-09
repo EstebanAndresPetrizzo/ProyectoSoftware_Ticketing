@@ -71,5 +71,30 @@ namespace TicketingAPI.Application.Services.Implementations
                 CreatedAt = reservation.ReservedAt
             };
         }
+
+        public async Task CancelReservationAsync(CreateReservationRequestDto request, CancellationToken cancellationToken = default)
+        {
+            var seat = await _unitOfWork.Seats.GetSeatByIdAsync(request.SeatId);
+            if (seat == null)
+            {
+                throw new ArgumentException("El asiento especificado no existe.");
+            }
+
+            if (seat.SectorId != request.SectorId)
+            {
+                throw new ArgumentException("El asiento no pertenece al sector especificado.");
+            }
+
+            var reservation = await _unitOfWork.Reservations.GetPendingReservationForUserAsync(
+                request.SeatId, request.EventId, request.UserId, cancellationToken);
+
+            if (reservation == null)
+            {
+                throw new InvalidOperationException("No tienes una reserva activa para esta butaca.");
+            }
+
+            reservation.Status = "Expired";
+            await _unitOfWork.CompleteAsync();
+        }
     }
 }

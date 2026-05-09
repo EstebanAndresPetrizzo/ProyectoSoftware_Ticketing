@@ -6,6 +6,6 @@ namespace TicketingAPI.Application.Services.Interfaces
     {
         Task<IEnumerable<SeatDto>> GetSeatsByEventIdAsync(int eventId);
 
-        Task<EventSeatMapDto> GetSeatMapByEventIdAsync(int eventId);
+        Task<EventSeatMapDto> GetSeatMapByEventIdAsync(int eventId, Guid? currentUserId = null);
     }
 }

@@ -40,5 +40,18 @@ namespace TicketingAPI.Repositories
                             && r.EventId == eventId 
                             && (r.Status == "Paid" || (r.Status == "Pending" && r.ExpiresAt > now)));
         }
+
+        public Task<Reservation?> GetPendingReservationForUserAsync(int seatId, int eventId, Guid userId, CancellationToken cancellationToken = default)
+        {
+            var now = DateTime.UtcNow;
+            return _context.Reservations
+                .FirstOrDefaultAsync(
+                    r => r.SeatId == seatId
+                         && r.EventId == eventId
+                         && r.UserId == userId
+                         && r.Status == "Pending"
+                         && r.ExpiresAt > now,
+                    cancellationToken);
+        }
     }
 }

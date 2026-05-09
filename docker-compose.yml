@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   postgres:
     image: postgres:16
@@ -24,6 +22,12 @@ services:
     environment:
       ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=ticketing;Username=ticketing_user;Password=ticketing_pass
       ASPNETCORE_ENVIRONMENT: Development
+      # Login de prueba sin Google (botón en la pantalla de login). Desactiva en producción.
+      Ticketing__EnableDockerDevLogin: "true"
+      # Opcional: Client ID OAuth de Google. Copia desde .env (ver .env.example).
+      Authentication__Google__ClientId: 1046346495617-n4eheruoh5e8cl43krcqquqg8sm0kc4l.apps.googleusercontent.com
+      App__Name: "TicketingApp"
+      App__ContactEmail: "petrizzoesteban@gmail.com"
     ports:
       - "5000:8080"
 
