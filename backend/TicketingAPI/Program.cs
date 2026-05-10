@@ -1,8 +1,12 @@
 using Microsoft.EntityFrameworkCore;
+using TicketingAPI.Configuration;
 using TicketingAPI.Data;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.Configure<GoogleAuthOptions>(builder.Configuration.GetSection(GoogleAuthOptions.SectionName));
+builder.Services.Configure<TicketingOptions>(builder.Configuration.GetSection(TicketingOptions.SectionName));
+builder.Services.Configure<AppBrandingOptions>(builder.Configuration.GetSection(AppBrandingOptions.SectionName));
 // Configuración de servicios
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -13,7 +17,7 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.Converters.Add(
             new JsonStringEnumConverter()
         );
-    });;
+    });
 // Generador nativo de .NET 10 — forzamos OpenAPI 3.0 para compatibilidad con Swagger UI
 builder.Services.AddOpenApi(options =>
 {
@@ -29,12 +33,14 @@ builder.Services.AddScoped<TicketingAPI.Repositories.IEventRepository, Ticketing
 builder.Services.AddScoped<TicketingAPI.Repositories.ISeatRepository, TicketingAPI.Repositories.SeatRepository>();
 builder.Services.AddScoped<TicketingAPI.Repositories.IReservationRepository, TicketingAPI.Repositories.ReservationRepository>();
 builder.Services.AddScoped<TicketingAPI.Repositories.IAuditLogRepository, TicketingAPI.Repositories.AuditLogRepository>();
+builder.Services.AddScoped<TicketingAPI.Repositories.IUserRepository, TicketingAPI.Repositories.UserRepository>();
 builder.Services.AddScoped<TicketingAPI.Repositories.IUnitOfWork, TicketingAPI.Repositories.UnitOfWork>();
 
 // Application Services
 builder.Services.AddScoped<TicketingAPI.Application.Services.Interfaces.IEventService, TicketingAPI.Application.Services.Implementations.EventService>();
 builder.Services.AddScoped<TicketingAPI.Application.Services.Interfaces.ISeatService, TicketingAPI.Application.Services.Implementations.SeatService>();
 builder.Services.AddScoped<TicketingAPI.Application.Services.Interfaces.IReservationService, TicketingAPI.Application.Services.Implementations.ReservationService>();
+builder.Services.AddScoped<TicketingAPI.Application.Services.Interfaces.IUserAuthService, TicketingAPI.Application.Services.Implementations.UserAuthService>();
 
 builder.Services.AddCors(options =>
 {
