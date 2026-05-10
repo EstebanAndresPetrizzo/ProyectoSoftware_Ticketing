@@ -1,6 +1,7 @@
 import { api } from "./api/api.js";
 import { renderCatalog, renderStadium, renderSelection } from "./ui/render.js";
 import { formatDateTime } from "./mappers/seatMapMapper.js";
+import { PaymentModal } from "./ui/payment-modal.js";
 import {
   ensureSessionOrRedirect,
   getSession,
@@ -9,6 +10,8 @@ import {
 import { applyAppBranding } from "./app-branding.js";
 
 ensureSessionOrRedirect();
+
+const paymentModal = new PaymentModal();
 
 const state = {
   eventId: null,
@@ -152,10 +155,12 @@ function collectMyPendingSelection(eventState) {
     const sid = sector.sectorId ?? sector.id;
     for (const seat of sector.seats) {
       if (seat.isMine && seat.myPendingExpiresAtUtc) {
+        const existing = state.selected.find(s => s.seatId === seat.id);
         sel.push({
           seatId: seat.id,
           sectorId: sid,
-          reservedUntil: new Date(seat.myPendingExpiresAtUtc).getTime()
+          reservedUntil: new Date(seat.myPendingExpiresAtUtc).getTime(),
+          reservationId: existing?.reservationId
         });
       }
     }
@@ -197,7 +202,13 @@ async function onSeatClick(seatId) {
 
     if (!foundSectorId) throw new Error("No se encontró el sector del asiento");
 
-    await api.reserveSeat(state.eventId, foundSectorId, seatId);
+    const reservation = await api.reserveSeat(state.eventId, foundSectorId, seatId);
+    state.selected.push({
+      seatId,
+      sectorId: foundSectorId,
+      reservedUntil: Date.now() + 5 * 60 * 1000,
+      reservationId: reservation.id
+    });
     await refreshSeats();
   } catch (err) {
     alert("⚠️ " + err.message);
@@ -255,11 +266,44 @@ function updateCountdown() {
 }
 
 async function confirmPurchase() {
+  if (state.selected.length === 0) {
+    alert("⚠️ No has seleccionado ninguna butaca");
+    return;
+  }
+
   try {
-    await api.confirmPurchase(
-      state.eventId,
-      state.selected.map(s => s.seatId)
-    );
+    let totalAmount = 0;
+    for (const selectedSeat of state.selected) {
+      for (const sector of state.eventState?.sectors ?? []) {
+        const foundSeat = sector.seats.find(s => s.id === selectedSeat.seatId);
+        if (foundSeat) {
+          totalAmount += sector.price ?? 0;
+          break;
+        }
+      }
+    }
+
+    const firstReservation = state.selected[0];
+    if (!firstReservation || !firstReservation.reservationId) {
+      throw new Error("No se encontró la reservación para procesar el pago.");
+    }
+
+    const reservationData = {
+      id: firstReservation.reservationId,
+      amount: totalAmount,
+      seats: state.selected.length
+    };
+
+    paymentModal.onPaymentSuccess = async (paymentResult) => {
+      alert(`✓ ¡Pago completado!\nID de Pago: ${paymentResult.transactionId || paymentResult.id}`);
+      await backToCatalog();
+    };
+
+    paymentModal.onPaymentError = async () => {
+      alert("✕ El pago fue rechazado. Intenta de nuevo o selecciona otro método.");
+    };
+
+    paymentModal.open(reservationData);
   } catch (err) {
     alert("❌ " + err.message);
     await refreshSeats();
