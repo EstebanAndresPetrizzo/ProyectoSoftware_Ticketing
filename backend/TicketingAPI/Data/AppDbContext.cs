@@ -14,8 +14,6 @@ namespace TicketingAPI.Data
         public DbSet<User> Users { get; set; }
         public DbSet<Reservation> Reservations { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
-        public DbSet<Payment> Payments { get; set; }
-        public DbSet<PaymentMethod> PaymentMethods { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -123,40 +121,6 @@ namespace TicketingAPI.Data
                       .WithMany(u => u.AuditLogs)
                       .HasForeignKey(a => a.UserId)
                       .OnDelete(DeleteBehavior.SetNull);
-            });
-
-            // Payment
-            modelBuilder.Entity<Payment>(entity =>
-            {
-                entity.HasKey(p => p.Id);
-                entity.Property(p => p.Amount).HasColumnType("decimal(10,2)");
-                entity.Property(p => p.Status).IsRequired().HasDefaultValue("Pending");
-                entity.Property(p => p.PaymentMethod).IsRequired().HasMaxLength(50);
-                entity.Property(p => p.TransactionId).HasMaxLength(100);
-                entity.Property(p => p.FailureReason).HasColumnType("text");
-
-                entity.HasOne(p => p.Reservation)
-                      .WithMany()
-                      .HasForeignKey(p => p.ReservationId)
-                      .OnDelete(DeleteBehavior.Restrict);
-
-                entity.HasOne(p => p.User)
-                      .WithMany()
-                      .HasForeignKey(p => p.UserId)
-                      .OnDelete(DeleteBehavior.Restrict);
-            });
-
-            // PaymentMethod
-            modelBuilder.Entity<PaymentMethod>(entity =>
-            {
-                entity.HasKey(pm => pm.Id);
-                entity.Property(pm => pm.Type).IsRequired().HasMaxLength(50);
-                entity.Property(pm => pm.MaskedData).IsRequired().HasMaxLength(100);
-
-                entity.HasOne(pm => pm.User)
-                      .WithMany()
-                      .HasForeignKey(pm => pm.UserId)
-                      .OnDelete(DeleteBehavior.Cascade);
             });
         }
     }

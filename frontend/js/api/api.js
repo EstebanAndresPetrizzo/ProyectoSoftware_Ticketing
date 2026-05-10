@@ -124,12 +124,11 @@ export const api = {
       })
     });
 
-    const json = await res.json();
-    if (!res.ok || !json.success) {
-      throw new Error(json.error || await readErrorMessage(res));
+    if (!res.ok) {
+      throw new Error(await readErrorMessage(res));
     }
 
-    return json.data;
+    return await res.json();
   },
 
   async releaseSeat(eventId, sectorId, seatId) {
@@ -155,45 +154,5 @@ export const api = {
 
   async confirmPurchase(_eventId, _seatIds) {
     throw new Error("La confirmación de compra no está implementada en la API.");
-  },
-
-  async processPayment(reservationId, amount, paymentMethod, cardData) {
-    const userId = requireUserId();
-    const res = await fetch(`${API_BASE_URL}/payments`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-User-Id": userId
-      },
-      body: JSON.stringify({
-        reservationId,
-        amount,
-        paymentMethod,
-        cardNumber: cardData.cardNumber,
-        cardholderName: cardData.cardholderName,
-        expiryMonth: cardData.expiryMonth,
-        expiryYear: cardData.expiryYear,
-        cvv: cardData.cvv
-      })
-    });
-
-    const json = await res.json();
-
-    if (!res.ok || !json.success) {
-      throw new Error(json.error || "Error al procesar el pago");
-    }
-
-    return json.data;
-  },
-
-  async getPayment(paymentId) {
-    const res = await fetch(`${API_BASE_URL}/payments/${paymentId}`);
-    const json = await res.json();
-
-    if (!res.ok || !json.success) {
-      throw new Error(json.error || "Error al obtener detalles del pago");
-    }
-
-    return json.data;
   }
 };
