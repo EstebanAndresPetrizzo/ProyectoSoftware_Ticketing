@@ -222,18 +222,24 @@ namespace TicketingAPI.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("character varying(150)");
 
+                    b.Property<string>("GoogleSub")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
                     b.Property<string>("PasswordHash")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("GoogleSub")
                         .IsUnique();
 
                     b.ToTable("Users");
