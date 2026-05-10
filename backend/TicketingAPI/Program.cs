@@ -34,6 +34,7 @@ builder.Services.AddScoped<TicketingAPI.Repositories.ISeatRepository, TicketingA
 builder.Services.AddScoped<TicketingAPI.Repositories.IReservationRepository, TicketingAPI.Repositories.ReservationRepository>();
 builder.Services.AddScoped<TicketingAPI.Repositories.IAuditLogRepository, TicketingAPI.Repositories.AuditLogRepository>();
 builder.Services.AddScoped<TicketingAPI.Repositories.IUserRepository, TicketingAPI.Repositories.UserRepository>();
+builder.Services.AddScoped<TicketingAPI.Repositories.IPaymentRepository, TicketingAPI.Repositories.PaymentRepository>();
 builder.Services.AddScoped<TicketingAPI.Repositories.IUnitOfWork, TicketingAPI.Repositories.UnitOfWork>();
 
 // Application Services
@@ -41,6 +42,8 @@ builder.Services.AddScoped<TicketingAPI.Application.Services.Interfaces.IEventSe
 builder.Services.AddScoped<TicketingAPI.Application.Services.Interfaces.ISeatService, TicketingAPI.Application.Services.Implementations.SeatService>();
 builder.Services.AddScoped<TicketingAPI.Application.Services.Interfaces.IReservationService, TicketingAPI.Application.Services.Implementations.ReservationService>();
 builder.Services.AddScoped<TicketingAPI.Application.Services.Interfaces.IUserAuthService, TicketingAPI.Application.Services.Implementations.UserAuthService>();
+builder.Services.AddScoped<TicketingAPI.Application.Services.Interfaces.IPaymentService, TicketingAPI.Application.Services.Implementations.PaymentService>();
+builder.Services.AddScoped<TicketingAPI.Application.Services.Interfaces.IPaymentProcessor, TicketingAPI.Application.Services.Implementations.MockPaymentProcessor>();
 
 builder.Services.AddCors(options =>
 {

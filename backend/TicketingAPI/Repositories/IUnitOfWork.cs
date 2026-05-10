@@ -6,6 +6,7 @@ namespace TicketingAPI.Repositories
         ISeatRepository Seats { get; }
         IReservationRepository Reservations { get; }
         IAuditLogRepository AuditLogs { get; }
+        IPaymentRepository Payments { get; }
 
         Task<int> CompleteAsync();
         Task BeginTransactionAsync();

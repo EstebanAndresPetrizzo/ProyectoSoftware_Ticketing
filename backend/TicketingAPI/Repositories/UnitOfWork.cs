@@ -17,19 +17,22 @@ namespace TicketingAPI.Repositories
         public ISeatRepository Seats { get; private set; }
         public IReservationRepository Reservations { get; private set; }
         public IAuditLogRepository AuditLogs { get; private set; }
+        public IPaymentRepository Payments { get; private set; }
 
         public UnitOfWork(
             AppDbContext context,
             IEventRepository eventRepository,
             ISeatRepository seatRepository,
             IReservationRepository reservationRepository,
-            IAuditLogRepository auditLogRepository)
+            IAuditLogRepository auditLogRepository,
+            IPaymentRepository paymentRepository)
         {
             _context = context;
             Events = eventRepository;
             Seats = seatRepository;
             Reservations = reservationRepository;
             AuditLogs = auditLogRepository;
+            Payments = paymentRepository;
         }
 
         /// <summary>
