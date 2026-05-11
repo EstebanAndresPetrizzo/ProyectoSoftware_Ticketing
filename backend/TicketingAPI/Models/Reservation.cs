@@ -6,7 +6,7 @@ namespace TicketingAPI.Models
         public Guid UserId { get; set; }
         public int? SeatId { get; set; }
         public int EventId { get; set; }
-        public string Status { get; set; } = "Pending"; //"Pending, Paid,Expired"
+        public string Status { get; set; } = "Pending"; // "Pending, Paid, Expired, Cancelled"
         public DateTime ReservedAt { get; set; } = DateTime.UtcNow;
         public DateTime ExpiresAt { get; set; }
         public User User { get; set; } = null!;

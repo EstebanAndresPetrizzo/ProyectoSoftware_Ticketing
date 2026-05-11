@@ -93,7 +93,19 @@ namespace TicketingAPI.Application.Services.Implementations
                 throw new InvalidOperationException("No tienes una reserva activa para esta butaca.");
             }
 
-            reservation.Status = "Expired";
+            reservation.Status = "Cancelled";
+
+            var auditLog = new AuditLog
+            {
+                UserId = request.UserId,
+                Action = "CancelReservation",
+                EntityType = "Reservation",
+                EntityId = reservation.Id.ToString(),
+                CreatedAt = DateTime.UtcNow,
+                Details = $"El usuario con ID '{request.UserId}' canceló manualmente su reserva de la butaca {seat.Id} del sector {request.SectorId} para el evento {request.EventId}"
+            };
+            await _unitOfWork.AuditLogs.AddAuditLogAsync(auditLog);
+
             await _unitOfWork.CompleteAsync();
         }
     }
