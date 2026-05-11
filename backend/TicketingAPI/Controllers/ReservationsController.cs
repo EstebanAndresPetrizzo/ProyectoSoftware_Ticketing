@@ -45,5 +45,29 @@ namespace TicketingAPI.Controllers
                 return StatusCode(500, new ApiResponse<ReservationResponseDto> { Success = false, Error = ex.Message });
             }
         }
+
+        [HttpDelete]
+        public async Task<ActionResult<ApiResponse<object?>>> CancelReservation(
+            [FromBody] CreateReservationRequestDto request,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                await _reservationService.CancelReservationAsync(request, cancellationToken);
+                return Ok(new ApiResponse<object?> { Success = true, Data = null });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new ApiResponse<object?> { Success = false, Error = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new ApiResponse<object?> { Success = false, Error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ApiResponse<object?> { Success = false, Error = ex.Message });
+            }
+        }
     }
 }
