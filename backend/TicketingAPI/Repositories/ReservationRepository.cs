@@ -53,5 +53,13 @@ namespace TicketingAPI.Repositories
                          && r.ExpiresAt > now,
                     cancellationToken);
         }
+
+        public async Task<IEnumerable<Reservation>> GetExpiredReservationsAsync()
+        {
+            var now = DateTime.UtcNow;
+            return await _context.Reservations
+                .Where(r => r.Status == "Pending" && r.ExpiresAt < now)
+                .ToListAsync();
+        }
     }
 }
