@@ -37,7 +37,7 @@ namespace TicketingAPI.Application.Services.Implementations
                     Position = sector.Position,
                     Seats = sector.Seats.Select(seat =>
                     {
-                        var (status, isMine, myPendingExpiresAtUtc) = ResolveSeatState(seat, eventId, now, currentUserId);
+                        var (status, isMine, myPendingExpiresAtUtc, myPendingExpiresInSeconds) = ResolveSeatState(seat, eventId, now, currentUserId);
                         return new SeatDto
                         {
                             Id = seat.Id,
@@ -46,41 +46,45 @@ namespace TicketingAPI.Application.Services.Implementations
                             Number = seat.SeatNumber,
                             Status = status,
                             IsMine = isMine,
-                            MyPendingExpiresAtUtc = myPendingExpiresAtUtc
+                            MyPendingExpiresAtUtc = myPendingExpiresAtUtc,
+                            MyPendingExpiresInSeconds = myPendingExpiresInSeconds
                         };
                     }).ToList()
                 }).ToList()
             };
         }
 
-        private static (SeatStatusDto Status, bool IsMine, DateTime? MyPendingExpiresAtUtc) ResolveSeatState(
+        private static (SeatStatusDto Status, bool IsMine, DateTime? MyPendingExpiresAtUtc, double? MyPendingExpiresInSeconds) ResolveSeatState(
             TicketingAPI.Models.Seat seat, int eventId, DateTime now, Guid? currentUserId)
         {
             var activeReservation = seat.Reservations
-                .FirstOrDefault(r => r.EventId == eventId && r.Status != "Expired");
+                .Where(r => r.EventId == eventId && r.Status != "Expired" && r.Status != "Cancelled")
+                .OrderByDescending(r => r.ReservedAt)
+                .FirstOrDefault();
 
             if (activeReservation == null)
             {
-                return (SeatStatusDto.Available, false, null);
+                return (SeatStatusDto.Available, false, null, null);
             }
 
             if (activeReservation.Status == "Paid")
             {
-                return (SeatStatusDto.Sold, false, null);
+                return (SeatStatusDto.Sold, false, null, null);
             }
 
             if (activeReservation.Status == "Pending")
             {
                 if (activeReservation.ExpiresAt <= now)
                 {
-                    return (SeatStatusDto.Available, false, null);
+                    return (SeatStatusDto.Available, false, null, null);
                 }
 
                 var mine = currentUserId.HasValue && activeReservation.UserId == currentUserId.Value;
-                return (SeatStatusDto.Reserved, mine, mine ? activeReservation.ExpiresAt : null);
+                double? expiresIn = mine ? (activeReservation.ExpiresAt - now).TotalSeconds : null;
+                return (SeatStatusDto.Reserved, mine, mine ? activeReservation.ExpiresAt : null, expiresIn);
             }
 
-            return (SeatStatusDto.Available, false, null);
+            return (SeatStatusDto.Available, false, null, null);
         }
 
         public async Task<IEnumerable<SeatDto>> GetSeatsByEventIdAsync(int eventId)
