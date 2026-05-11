@@ -58,6 +58,9 @@ namespace TicketingAPI.Repositories
         {
             var now = DateTime.UtcNow;
             return await _context.Reservations
+                .Include(r => r.Seat)
+                    .ThenInclude(s => s.Sector)
+                .Include(r => r.Event)
                 .Where(r => r.Status == "Pending" && r.ExpiresAt < now)
                 .ToListAsync();
         }

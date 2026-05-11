@@ -46,6 +46,10 @@ namespace TicketingAPI.Application.Services.Implementations
             await _unitOfWork.Reservations.AddReservationAsync(reservation);
 
             // 2. Crear log de auditoría
+            var evt = await _unitOfWork.Events.GetEventByIdAsync(request.EventId);
+            var sectorName = evt?.Venue?.Sectors.FirstOrDefault(s => s.Id == request.SectorId)?.Name ?? request.SectorId.ToString();
+            var eventName = evt?.Name ?? request.EventId.ToString();
+
             var auditLog = new AuditLog
             {
                 UserId = request.UserId,
@@ -53,7 +57,7 @@ namespace TicketingAPI.Application.Services.Implementations
                 EntityType = "Seat",
                 EntityId = seat.Id.ToString(),
                 CreatedAt = DateTime.UtcNow,
-                Details = $"El usuario con ID '{request.UserId}' reservó la butaca {seat.Id} del sector {request.SectorId} para el evento {request.EventId}"
+                Details = $"Reserva realizada para la butaca {seat.SeatNumber} en el sector '{sectorName}' para el evento '{eventName}'."
             };
             await _unitOfWork.AuditLogs.AddAuditLogAsync(auditLog);
 
@@ -95,6 +99,10 @@ namespace TicketingAPI.Application.Services.Implementations
 
             reservation.Status = "Cancelled";
 
+            var evt = await _unitOfWork.Events.GetEventByIdAsync(request.EventId);
+            var sectorName = evt?.Venue?.Sectors.FirstOrDefault(s => s.Id == request.SectorId)?.Name ?? request.SectorId.ToString();
+            var eventName = evt?.Name ?? request.EventId.ToString();
+
             var auditLog = new AuditLog
             {
                 UserId = request.UserId,
@@ -102,7 +110,7 @@ namespace TicketingAPI.Application.Services.Implementations
                 EntityType = "Reservation",
                 EntityId = reservation.Id.ToString(),
                 CreatedAt = DateTime.UtcNow,
-                Details = $"El usuario con ID '{request.UserId}' canceló manualmente su reserva de la butaca {seat.Id} del sector {request.SectorId} para el evento {request.EventId}"
+                Details = $"Reserva cancelada manualmente para la butaca {seat.SeatNumber} en el sector '{sectorName}' para el evento '{eventName}'."
             };
             await _unitOfWork.AuditLogs.AddAuditLogAsync(auditLog);
 

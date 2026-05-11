@@ -58,7 +58,7 @@ namespace TicketingAPI.Infrastructure.BackgroundServices
                         UserId = reservation.UserId,
                         EntityType = "Reservation",
                         EntityId = reservation.Id.ToString(),
-                        Details = $"Reserva {reservation.Id} expirada automáticamente.",
+                        Details = $"La reserva de la butaca {reservation.Seat?.SeatNumber} en el sector '{reservation.Seat?.Sector?.Name}' para el evento '{reservation.Event?.Name}' expiró automáticamente por límite de tiempo.",
                         CreatedAt = DateTime.UtcNow
                     });
                 }
