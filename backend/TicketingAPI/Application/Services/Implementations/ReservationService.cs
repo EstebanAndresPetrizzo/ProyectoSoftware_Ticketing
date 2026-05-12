@@ -46,6 +46,10 @@ namespace TicketingAPI.Application.Services.Implementations
             await _unitOfWork.Reservations.AddReservationAsync(reservation);
 
             // 2. Crear log de auditoría
+            var evt = await _unitOfWork.Events.GetEventByIdAsync(request.EventId);
+            var sectorName = evt?.Venue?.Sectors.FirstOrDefault(s => s.Id == request.SectorId)?.Name ?? request.SectorId.ToString();
+            var eventName = evt?.Name ?? request.EventId.ToString();
+
             var auditLog = new AuditLog
             {
                 UserId = request.UserId,
@@ -53,7 +57,7 @@ namespace TicketingAPI.Application.Services.Implementations
                 EntityType = "Seat",
                 EntityId = seat.Id.ToString(),
                 CreatedAt = DateTime.UtcNow,
-                Details = $"El usuario con ID '{request.UserId}' reservó la butaca {seat.Id} del sector {request.SectorId} para el evento {request.EventId}"
+                Details = $"Reserva realizada para la butaca {seat.SeatNumber} en el sector '{sectorName}' para el evento '{eventName}'."
             };
             await _unitOfWork.AuditLogs.AddAuditLogAsync(auditLog);
 
@@ -70,6 +74,47 @@ namespace TicketingAPI.Application.Services.Implementations
                 Status = reservation.Status,
                 CreatedAt = reservation.ReservedAt
             };
+        }
+
+        public async Task CancelReservationAsync(CreateReservationRequestDto request, CancellationToken cancellationToken = default)
+        {
+            var seat = await _unitOfWork.Seats.GetSeatByIdAsync(request.SeatId);
+            if (seat == null)
+            {
+                throw new ArgumentException("El asiento especificado no existe.");
+            }
+
+            if (seat.SectorId != request.SectorId)
+            {
+                throw new ArgumentException("El asiento no pertenece al sector especificado.");
+            }
+
+            var reservation = await _unitOfWork.Reservations.GetPendingReservationForUserAsync(
+                request.SeatId, request.EventId, request.UserId, cancellationToken);
+
+            if (reservation == null)
+            {
+                throw new InvalidOperationException("No tienes una reserva activa para esta butaca.");
+            }
+
+            reservation.Status = "Cancelled";
+
+            var evt = await _unitOfWork.Events.GetEventByIdAsync(request.EventId);
+            var sectorName = evt?.Venue?.Sectors.FirstOrDefault(s => s.Id == request.SectorId)?.Name ?? request.SectorId.ToString();
+            var eventName = evt?.Name ?? request.EventId.ToString();
+
+            var auditLog = new AuditLog
+            {
+                UserId = request.UserId,
+                Action = "CancelReservation",
+                EntityType = "Reservation",
+                EntityId = reservation.Id.ToString(),
+                CreatedAt = DateTime.UtcNow,
+                Details = $"Reserva cancelada manualmente para la butaca {seat.SeatNumber} en el sector '{sectorName}' para el evento '{eventName}'."
+            };
+            await _unitOfWork.AuditLogs.AddAuditLogAsync(auditLog);
+
+            await _unitOfWork.CompleteAsync();
         }
     }
 }

@@ -151,11 +151,11 @@ function collectMyPendingSelection(eventState) {
   for (const sector of eventState.sectors) {
     const sid = sector.sectorId ?? sector.id;
     for (const seat of sector.seats) {
-      if (seat.isMine && seat.myPendingExpiresAtUtc) {
+      if (seat.isMine && seat.myPendingExpiresInSeconds > 0) {
         sel.push({
           seatId: seat.id,
           sectorId: sid,
-          reservedUntil: new Date(seat.myPendingExpiresAtUtc).getTime()
+          reservedUntil: Date.now() + (seat.myPendingExpiresInSeconds * 1000)
         });
       }
     }
