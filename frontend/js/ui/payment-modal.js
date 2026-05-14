@@ -87,12 +87,27 @@ export class PaymentModal {
         cvv: document.getElementById("cvv").value
       };
 
-      const paymentResult = await api.processPayment(
-        this.reservationData.id,
-        this.reservationData.amount,
-        paymentMethod,
-        cardData
-      );
+      // Verificar si es pago múltiple o individual
+      let paymentResult;
+      if (Array.isArray(this.reservationData.ids)) {
+        // Pago múltiple
+        const results = await api.processBulkPayment(
+          this.reservationData.ids,
+          this.reservationData.amount,
+          paymentMethod,
+          cardData
+        );
+        // Asumir que si el primer resultado está completado, el pago fue exitoso
+        paymentResult = results[0];
+      } else {
+        // Pago individual
+        paymentResult = await api.processPayment(
+          this.reservationData.id,
+          this.reservationData.amount,
+          paymentMethod,
+          cardData
+        );
+      }
 
       if (paymentResult.status === "Completed") {
         this.showStatus("✓ Pago completado exitosamente", false);

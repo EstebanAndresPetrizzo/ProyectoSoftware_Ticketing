@@ -283,13 +283,15 @@ async function confirmPurchase() {
       }
     }
 
-    const firstReservation = state.selected[0];
-    if (!firstReservation || !firstReservation.reservationId) {
-      throw new Error("No se encontró la reservación para procesar el pago.");
+    // Recopilar todos los IDs de reserva
+    const reservationIds = state.selected.map(s => s.reservationId).filter(id => id);
+    
+    if (reservationIds.length === 0) {
+      throw new Error("No se encontraron las reservaciones para procesar el pago.");
     }
 
     const reservationData = {
-      id: firstReservation.reservationId,
+      ids: reservationIds,  // Enviar todos los IDs
       amount: totalAmount,
       seats: state.selected.length
     };

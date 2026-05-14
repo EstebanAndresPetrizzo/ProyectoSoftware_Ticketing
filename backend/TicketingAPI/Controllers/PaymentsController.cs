@@ -45,6 +45,33 @@ namespace TicketingAPI.Controllers
         }
 
         /// <summary>
+        /// Procesa un pago para múltiples reservaciones de una sola vez.
+        /// </summary>
+        [HttpPost("bulk")]
+        public async Task<ActionResult<ApiResponse<List<PaymentResponseDto>>>> ProcessBulkPayment(
+            [FromBody] CreateBulkPaymentRequestDto request,
+            [FromHeader(Name = "X-User-Id")] Guid userId)
+        {
+            try
+            {
+                var results = await _paymentService.ProcessBulkPaymentAsync(request, userId);
+                return Ok(new ApiResponse<List<PaymentResponseDto>> { Success = true, Data = results });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new ApiResponse<List<PaymentResponseDto>> { Success = false, Error = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new ApiResponse<List<PaymentResponseDto>> { Success = false, Error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ApiResponse<List<PaymentResponseDto>> { Success = false, Error = ex.Message });
+            }
+        }
+
+        /// <summary>
         /// Obtiene los detalles de un pago específico.
         /// </summary>
         [HttpGet("{paymentId}")]
