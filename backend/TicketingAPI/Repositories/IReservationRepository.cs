@@ -8,5 +8,9 @@ namespace TicketingAPI.Repositories
         Task<Reservation?> GetByIdAsync(Guid id);
         Task UpdateAsync(Reservation reservation);
         Task<bool> AnyActiveReservationAsync(int seatId, int eventId);
+
+        Task<Reservation?> GetPendingReservationForUserAsync(int seatId, int eventId, Guid userId, CancellationToken cancellationToken = default);
+
+        Task<IEnumerable<Reservation>> GetExpiredReservationsAsync();
     }
 }

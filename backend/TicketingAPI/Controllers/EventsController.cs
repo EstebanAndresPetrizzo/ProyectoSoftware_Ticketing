@@ -56,11 +56,11 @@ namespace TicketingAPI.Controllers
         /// Devuelve el estado actual de todas las butacas para un evento.
         /// </summary>
         [HttpGet("{id}/seats")]
-        public async Task<ActionResult<ApiResponse<EventSeatMapDto>>> GetSeats([FromRoute] int id)
+        public async Task<ActionResult<ApiResponse<EventSeatMapDto>>> GetSeats([FromRoute] int id, [FromQuery] Guid? userId = null)
         {
             try
             {
-                var seatMap = await _seatService.GetSeatMapByEventIdAsync(id);
+                var seatMap = await _seatService.GetSeatMapByEventIdAsync(id, userId);
 
                 return Ok(new ApiResponse<EventSeatMapDto>
                 {

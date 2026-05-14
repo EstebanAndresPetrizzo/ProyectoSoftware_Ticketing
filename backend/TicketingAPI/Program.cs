@@ -44,6 +44,7 @@ builder.Services.AddScoped<TicketingAPI.Application.Services.Interfaces.IReserva
 builder.Services.AddScoped<TicketingAPI.Application.Services.Interfaces.IUserAuthService, TicketingAPI.Application.Services.Implementations.UserAuthService>();
 builder.Services.AddScoped<TicketingAPI.Application.Services.Interfaces.IPaymentService, TicketingAPI.Application.Services.Implementations.PaymentService>();
 builder.Services.AddScoped<TicketingAPI.Application.Services.Interfaces.IPaymentProcessor, TicketingAPI.Application.Services.Implementations.MockPaymentProcessor>();
+builder.Services.AddHostedService<TicketingAPI.Infrastructure.BackgroundServices.ReservationCleanupService>();
 
 builder.Services.AddCors(options =>
 {
