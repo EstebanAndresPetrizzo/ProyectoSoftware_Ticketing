@@ -1,5 +1,6 @@
 import { api } from "./api/api.js";
 import { renderCatalog, renderStadium, renderSelection } from "./ui/render.js";
+import { showToast } from "./ui/toast.js";
 import { formatDateTime } from "./mappers/seatMapMapper.js";
 import {
   ensureSessionOrRedirect,
@@ -32,10 +33,18 @@ function setupUserBar() {
   const s = getSession();
   if (!s) return;
 
+  const displayName = escapeHtml(s.name || s.email || "");
+  const initial = displayName ? displayName.charAt(0).toUpperCase() : "U";
+
   bar.innerHTML = `
-    <span class="text-slate-200 hidden sm:inline">${escapeHtml(s.name || s.email || "")}</span>
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 rounded bg-white/20 text-white border border-white/30 flex items-center justify-center font-bold text-sm">
+        ${initial}
+      </div>
+      <span class="text-white font-medium hidden sm:inline">${displayName}</span>
+    </div>
     <button type="button" id="btn-logout"
-      class="rounded-lg bg-white/10 px-3 py-1.5 font-medium text-white hover:bg-white/20 transition">
+      class="rounded bg-white px-4 py-1.5 text-sm font-bold text-blue-600 hover:bg-slate-50 transition-colors shadow-sm hover:shadow">
       Cerrar sesión
     </button>
   `;
@@ -56,15 +65,36 @@ async function init() {
   await applyAppBranding("Eventos");
   setupUserBar();
   await loadCatalog();
-
   $("btn-back").addEventListener("click", () => {
+    if (state.selected && state.selected.length > 0) {
+      $("exit-warning-modal").classList.remove("hidden");
+    } else {
+      void backToCatalog();
+    }
+  });
+
+  $("btn-stay-modal").addEventListener("click", () => {
+    $("exit-warning-modal").classList.add("hidden");
+  });
+
+  $("btn-leave-modal").addEventListener("click", async () => {
+    $("exit-warning-modal").classList.add("hidden");
+
+    // El usuario confirmó salir, liberamos las reservas
+    await Promise.all(
+      state.selected.map(s =>
+        api.releaseSeat(state.eventId, s.sectorId, s.seatId).catch(() => { })
+      )
+    );
+    state.selected = [];
+
     void backToCatalog();
   });
   $("btn-buy").addEventListener("click", confirmPurchase);
   $("stadium-map").addEventListener("click", (e) => {
     const btn = e.target.closest("[data-seat-id]");
     if (!btn) return;
-    
+
     const seatId = Number(btn.dataset.seatId);
     if (!isNaN(seatId)) {
       onSeatClick(seatId);
@@ -115,11 +145,24 @@ async function openEvent(eventId) {
   $("view-catalog").classList.add("hidden");
   $("view-seats").classList.remove("hidden");
 
+  $("main-content-grid").classList.remove("lg:grid-cols-[1fr]");
+  $("main-content-grid").classList.add("lg:grid-cols-[1fr_320px]");
+  $("sidebar-panel").classList.remove("hidden");
+
   const { events } = await api.listEvents();
   const evt = events.find(e => e.id === state.eventId);
 
   $("event-title").textContent = evt.name;
-  $("event-meta").textContent = `📅 ${formatDateTime(evt.date)} · 📍 ${evt.venue}`;
+  $("event-meta").innerHTML = `
+    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 text-blue-700 text-[11px] font-bold rounded border border-blue-200">
+      <svg class="w-3 h-3 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+      ${formatDateTime(evt.date)}
+    </span>
+    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-700 text-[11px] font-bold rounded border border-emerald-200">
+      <svg class="w-3 h-3 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+      ${evt.venue}
+    </span>
+  `;
 
   await refreshSeats();
 
@@ -128,12 +171,6 @@ async function openEvent(eventId) {
 }
 
 async function backToCatalog() {
-  await Promise.all(
-    state.selected.map(s =>
-      api.releaseSeat(state.eventId, s.sectorId, s.seatId).catch(() => {})
-    )
-  );
-
   state.selected = [];
 
   clearInterval(state.pollTimer);
@@ -141,6 +178,10 @@ async function backToCatalog() {
 
   $("countdown").classList.add("hidden");
   $("view-seats").classList.add("hidden");
+  $("sidebar-panel").classList.add("hidden");
+  $("main-content-grid").classList.add("lg:grid-cols-[1fr]");
+  $("main-content-grid").classList.remove("lg:grid-cols-[1fr_320px]");
+
   $("view-catalog").classList.remove("hidden");
 
   loadCatalog();
@@ -149,7 +190,7 @@ async function backToCatalog() {
 function collectMyPendingSelection(eventState) {
   const sel = [];
   for (const sector of eventState.sectors) {
-    const sid = sector.sectorId ?? sector.id;
+    const sid = sector.id ?? sector.sectorId;
     for (const seat of sector.seats) {
       if (seat.isMine && seat.myPendingExpiresInSeconds > 0) {
         sel.push({
@@ -179,7 +220,7 @@ async function onSeatClick(seatId) {
     try {
       await api.releaseSeat(state.eventId, alreadySelected.sectorId, seatId);
     } catch (err) {
-      alert("⚠️ " + err.message);
+      showToast(err.message, "warning");
     }
     await refreshSeats();
     return;
@@ -190,7 +231,7 @@ async function onSeatClick(seatId) {
     for (const sector of state.eventState.sectors) {
       const seat = sector.seats.find(s => s.id === seatId);
       if (seat) {
-        foundSectorId = sector.id || sector.sectorId;
+        foundSectorId = sector.id ?? sector.sectorId;
         break;
       }
     }
@@ -200,7 +241,7 @@ async function onSeatClick(seatId) {
     await api.reserveSeat(state.eventId, foundSectorId, seatId);
     await refreshSeats();
   } catch (err) {
-    alert("⚠️ " + err.message);
+    showToast(err.message, "warning");
     await refreshSeats();
   }
 }
@@ -242,6 +283,7 @@ function updateCountdown() {
       `${minutes}:${seconds.toString().padStart(2, "0")}`;
 
     if (remaining === 0) {
+      showToast("Tu reserva ha expirado. Las butacas han sido liberadas.", "warning");
       refreshSeats();
     }
   };
@@ -261,7 +303,7 @@ async function confirmPurchase() {
       state.selected.map(s => s.seatId)
     );
   } catch (err) {
-    alert("❌ " + err.message);
+    showToast(err.message, "error");
     await refreshSeats();
   }
 }
