@@ -51,6 +51,10 @@ namespace TicketingAPI.Infrastructure.BackgroundServices
                 foreach (var reservation in expiredReservations)
                 {
                     reservation.Status = "Expired";
+                    if (reservation.Seat != null)
+                    {
+                        reservation.Seat.Status = "Available";
+                    }
 
                     await unitOfWork.AuditLogs.AddAuditLogAsync(new AuditLog
                     {

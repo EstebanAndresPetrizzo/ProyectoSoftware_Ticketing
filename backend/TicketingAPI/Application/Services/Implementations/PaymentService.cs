@@ -18,172 +18,192 @@ namespace TicketingAPI.Application.Services.Implementations
 
         public async Task<PaymentResponseDto> ProcessPaymentAsync(CreatePaymentRequestDto request, Guid userId)
         {
-            // 1. Validar que la reserva existe y está en estado "Pending"
-            var reservation = await _unitOfWork.Reservations.GetByIdAsync(request.ReservationId);
-            if (reservation == null || reservation.Status != "Pending")
-                throw new InvalidOperationException("Reserva inválida o ya pagada");
-
-            // 2. Procesar pago con el processor
-            var command = new ProcessPaymentCommand
+            await _unitOfWork.BeginTransactionAsync();
+            try
             {
-                PaymentMethod = request.PaymentMethod,
-                Amount = request.Amount,
-                CardNumber = request.CardNumber,
-                CardholderName = request.CardholderName,
-                ExpiryMonth = request.ExpiryMonth,
-                ExpiryYear = request.ExpiryYear,
-                CVV = request.CVV
-            };
+                // 1. Validar que la reserva existe y está en estado "Pending"
+                var reservation = await _unitOfWork.Reservations.GetByIdAsync(request.ReservationId);
+                if (reservation == null || reservation.Status != "Pending")
+                    throw new InvalidOperationException("Reserva inválida o ya pagada");
 
-            var result = await _paymentProcessor.ProcessAsync(command);
+                if (reservation.ExpiresAt <= DateTime.UtcNow)
+                    throw new InvalidOperationException("La reserva ha expirado y no puede procesarse el pago.");
 
-            // 3. Crear registro de Payment
-            var payment = new Payment
-            {
-                ReservationId = request.ReservationId,
-                UserId = userId,
-                Amount = request.Amount,
-                PaymentMethod = request.PaymentMethod,
-                Status = result.Success ? "Completed" : "Failed",
-                TransactionId = result.TransactionId,
-                FailureReason = result.ErrorMessage,
-                ProcessedAt = DateTime.UtcNow
-            };
-            await _unitOfWork.Payments.AddAsync(payment);
+                // 2. Procesar pago con el processor
+                var command = new ProcessPaymentCommand
+                {
+                    PaymentMethod = request.PaymentMethod,
+                    Amount = request.Amount,
+                    CardNumber = request.CardNumber,
+                    CardholderName = request.CardholderName,
+                    ExpiryMonth = request.ExpiryMonth,
+                    ExpiryYear = request.ExpiryYear,
+                    CVV = request.CVV
+                };
 
-            // 4. Si pago exitoso, actualizar estado de reserva y asiento
-            if (result.Success && reservation.Seat != null)
-            {
-                reservation.Status = "Paid";
-                reservation.Seat.Status = "Purchased"; // Cambiar asiento a comprado
-                await _unitOfWork.Reservations.UpdateAsync(reservation);
+                var result = await _paymentProcessor.ProcessAsync(command);
+
+                // 3. Crear registro de Payment
+                var payment = new Payment
+                {
+                    ReservationId = request.ReservationId,
+                    UserId = userId,
+                    Amount = request.Amount,
+                    PaymentMethod = request.PaymentMethod,
+                    Status = result.Success ? "Completed" : "Failed",
+                    TransactionId = result.TransactionId,
+                    FailureReason = result.ErrorMessage,
+                    ProcessedAt = DateTime.UtcNow
+                };
+                await _unitOfWork.Payments.AddAsync(payment);
+
+                // 4. Si pago exitoso, actualizar estado de reserva y asiento
+                if (result.Success && reservation.Seat != null)
+                {
+                    reservation.Status = "Paid";
+                    reservation.Seat.Status = "Purchased"; // Cambiar asiento a comprado
+                    await _unitOfWork.Reservations.UpdateAsync(reservation);
+                }
+
+                // 5. Auditar
+                var auditLog = new AuditLog
+                {
+                    UserId = userId,
+                    Action = result.Success ? "PaymentCompleted" : "PaymentFailed",
+                    EntityType = "Payment",
+                    EntityId = payment.Id.ToString(),
+                    CreatedAt = DateTime.UtcNow,
+                    Details = $"Pago de ${request.Amount} - {result.ErrorMessage ?? "Exitoso"}"
+                };
+                await _unitOfWork.AuditLogs.AddAuditLogAsync(auditLog);
+
+                await _unitOfWork.CompleteAsync();
+                await _unitOfWork.CommitTransactionAsync();
+
+                return MapToDto(payment);
             }
-
-            // 5. Auditar
-            var auditLog = new AuditLog
+            catch
             {
-                UserId = userId,
-                Action = result.Success ? "PaymentCompleted" : "PaymentFailed",
-                EntityType = "Payment",
-                EntityId = payment.Id.ToString(),
-                CreatedAt = DateTime.UtcNow,
-                Details = $"Pago de ${request.Amount} - {result.ErrorMessage ?? "Exitoso"}"
-            };
-            await _unitOfWork.AuditLogs.AddAuditLogAsync(auditLog);
-
-            await _unitOfWork.CompleteAsync();
-
-            return MapToDto(payment);
+                await _unitOfWork.RollbackTransactionAsync();
+                throw;
+            }
         }
 
         public async Task<List<PaymentResponseDto>> ProcessBulkPaymentAsync(CreateBulkPaymentRequestDto request, Guid userId)
         {
-            if (request.ReservationIds == null || request.ReservationIds.Count == 0)
-                throw new ArgumentException("Debes incluir al menos una reserva para procesar el pago");
-
-            // 1. Validar que todas las reservas existan y estén en estado "Pending"
-            var reservations = new List<Reservation>();
-            foreach (var reservationId in request.ReservationIds)
+            await _unitOfWork.BeginTransactionAsync();
+            try
             {
-                var reservation = await _unitOfWork.Reservations.GetByIdAsync(reservationId);
-                if (reservation == null || reservation.Status != "Pending")
-                    throw new InvalidOperationException($"Reserva {reservationId} inválida o ya pagada");
-                reservations.Add(reservation);
-            }
+                if (request.ReservationIds == null || request.ReservationIds.Count == 0)
+                    throw new ArgumentException("Debes incluir al menos una reserva para procesar el pago");
 
-            // 2. Procesar un único pago para todas las reservas
-            var command = new ProcessPaymentCommand
-            {
-                PaymentMethod = request.PaymentMethod,
-                Amount = request.Amount,
-                CardNumber = request.CardNumber,
-                CardholderName = request.CardholderName,
-                ExpiryMonth = request.ExpiryMonth,
-                ExpiryYear = request.ExpiryYear,
-                CVV = request.CVV
-            };
-
-            var result = await _paymentProcessor.ProcessAsync(command);
-
-            var paymentResponses = new List<PaymentResponseDto>();
-
-            // 3. Crear registros de Payment para cada reserva
-            if (result.Success)
-            {
-                // Si pago exitoso, crear un Payment por cada reserva y actualizar estados
-                foreach (var reservation in reservations)
+                // 1. Validar que todas las reservas existan y estén en estado "Pending"
+                var reservations = new List<Reservation>();
+                foreach (var reservationId in request.ReservationIds)
                 {
-                    var payment = new Payment
-                    {
-                        ReservationId = reservation.Id,
-                        UserId = userId,
-                        Amount = request.Amount / reservations.Count, // Dividir el monto entre las reservas
-                        PaymentMethod = request.PaymentMethod,
-                        Status = "Completed",
-                        TransactionId = result.TransactionId,
-                        FailureReason = null,
-                        ProcessedAt = DateTime.UtcNow
-                    };
-                    await _unitOfWork.Payments.AddAsync(payment);
-
-                    // Auditar cada pago individualmente
-                    var auditLog = new AuditLog
-                    {
-                        UserId = userId,
-                        Action = "PaymentCompleted",
-                        EntityType = "Payment",
-                        EntityId = payment.Id.ToString(),
-                        CreatedAt = DateTime.UtcNow,
-                        Details = $"Pago de ${payment.Amount} para reserva {reservation.Id} (parte de pago múltiple de {reservations.Count} reservas)"
-                    };
-                    await _unitOfWork.AuditLogs.AddAuditLogAsync(auditLog);
-
-                    // Actualizar reserva y asiento
-                    reservation.Status = "Paid";
-                    if (reservation.Seat != null)
-                        reservation.Seat.Status = "Purchased";
-                    await _unitOfWork.Reservations.UpdateAsync(reservation);
-
-                    paymentResponses.Add(MapToDto(payment));
+                    var reservation = await _unitOfWork.Reservations.GetByIdAsync(reservationId);
+                    if (reservation == null || reservation.Status != "Pending")
+                        throw new InvalidOperationException($"Reserva {reservationId} inválida o ya pagada");
+                    if (reservation.ExpiresAt <= DateTime.UtcNow)
+                        throw new InvalidOperationException($"Reserva {reservationId} ha expirado y no puede procesarse el pago.");
+                    reservations.Add(reservation);
                 }
-            }
-            else
-            {
-                // Si pago falla, crear un Payment para cada reserva con estado Failed
-                foreach (var reservation in reservations)
+
+                // 2. Procesar un único pago para todas las reservas
+                var command = new ProcessPaymentCommand
                 {
-                    var payment = new Payment
-                    {
-                        ReservationId = reservation.Id,
-                        UserId = userId,
-                        Amount = request.Amount / reservations.Count,
-                        PaymentMethod = request.PaymentMethod,
-                        Status = "Failed",
-                        TransactionId = result.TransactionId,
-                        FailureReason = result.ErrorMessage,
-                        ProcessedAt = DateTime.UtcNow
-                    };
-                    await _unitOfWork.Payments.AddAsync(payment);
+                    PaymentMethod = request.PaymentMethod,
+                    Amount = request.Amount,
+                    CardNumber = request.CardNumber,
+                    CardholderName = request.CardholderName,
+                    ExpiryMonth = request.ExpiryMonth,
+                    ExpiryYear = request.ExpiryYear,
+                    CVV = request.CVV
+                };
 
-                    // Auditar cada pago fallido individualmente
-                    var auditLog = new AuditLog
-                    {
-                        UserId = userId,
-                        Action = "PaymentFailed",
-                        EntityType = "Payment",
-                        EntityId = payment.Id.ToString(),
-                        CreatedAt = DateTime.UtcNow,
-                        Details = $"Pago fallido de ${payment.Amount} para reserva {reservation.Id} (parte de pago múltiple de {reservations.Count} reservas) - {result.ErrorMessage}"
-                    };
-                    await _unitOfWork.AuditLogs.AddAuditLogAsync(auditLog);
+                var result = await _paymentProcessor.ProcessAsync(command);
 
-                    paymentResponses.Add(MapToDto(payment));
+                var paymentResponses = new List<PaymentResponseDto>();
+
+                // 3. Crear registros de Payment para cada reserva
+                if (result.Success)
+                {
+                    foreach (var reservation in reservations)
+                    {
+                        var payment = new Payment
+                        {
+                            ReservationId = reservation.Id,
+                            UserId = userId,
+                            Amount = request.Amount / reservations.Count,
+                            PaymentMethod = request.PaymentMethod,
+                            Status = "Completed",
+                            TransactionId = result.TransactionId,
+                            FailureReason = null,
+                            ProcessedAt = DateTime.UtcNow
+                        };
+                        await _unitOfWork.Payments.AddAsync(payment);
+
+                        var auditLog = new AuditLog
+                        {
+                            UserId = userId,
+                            Action = "PaymentCompleted",
+                            EntityType = "Payment",
+                            EntityId = payment.Id.ToString(),
+                            CreatedAt = DateTime.UtcNow,
+                            Details = $"Pago de ${payment.Amount} para reserva {reservation.Id} (parte de pago múltiple de {reservations.Count} reservas)"
+                        };
+                        await _unitOfWork.AuditLogs.AddAuditLogAsync(auditLog);
+
+                        reservation.Status = "Paid";
+                        if (reservation.Seat != null)
+                            reservation.Seat.Status = "Purchased";
+                        await _unitOfWork.Reservations.UpdateAsync(reservation);
+
+                        paymentResponses.Add(MapToDto(payment));
+                    }
                 }
+                else
+                {
+                    foreach (var reservation in reservations)
+                    {
+                        var payment = new Payment
+                        {
+                            ReservationId = reservation.Id,
+                            UserId = userId,
+                            Amount = request.Amount / reservations.Count,
+                            PaymentMethod = request.PaymentMethod,
+                            Status = "Failed",
+                            TransactionId = result.TransactionId,
+                            FailureReason = result.ErrorMessage,
+                            ProcessedAt = DateTime.UtcNow
+                        };
+                        await _unitOfWork.Payments.AddAsync(payment);
+
+                        var auditLog = new AuditLog
+                        {
+                            UserId = userId,
+                            Action = "PaymentFailed",
+                            EntityType = "Payment",
+                            EntityId = payment.Id.ToString(),
+                            CreatedAt = DateTime.UtcNow,
+                            Details = $"Pago fallido de ${payment.Amount} para reserva {reservation.Id} (parte de pago múltiple de {reservations.Count} reservas) - {result.ErrorMessage}"
+                        };
+                        await _unitOfWork.AuditLogs.AddAuditLogAsync(auditLog);
+
+                        paymentResponses.Add(MapToDto(payment));
+                    }
+                }
+
+                await _unitOfWork.CompleteAsync();
+                await _unitOfWork.CommitTransactionAsync();
+
+                return paymentResponses;
             }
-
-            await _unitOfWork.CompleteAsync();
-
-            return paymentResponses;
+            catch
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                throw;
+            }
         }
 
         public async Task<PaymentResponseDto> GetPaymentAsync(Guid paymentId)
