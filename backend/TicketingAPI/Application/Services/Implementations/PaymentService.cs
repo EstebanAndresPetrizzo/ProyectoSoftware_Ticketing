@@ -61,7 +61,6 @@ namespace TicketingAPI.Application.Services.Implementations
                 if (result.Success && reservation.Seat != null)
                 {
                     reservation.Status = "Paid";
-                    reservation.Seat.Status = "Purchased"; // Cambiar asiento a comprado
                     await _unitOfWork.Reservations.UpdateAsync(reservation);
                 }
 
@@ -155,8 +154,6 @@ namespace TicketingAPI.Application.Services.Implementations
                         await _unitOfWork.AuditLogs.AddAuditLogAsync(auditLog);
 
                         reservation.Status = "Paid";
-                        if (reservation.Seat != null)
-                            reservation.Seat.Status = "Purchased";
                         await _unitOfWork.Reservations.UpdateAsync(reservation);
 
                         paymentResponses.Add(MapToDto(payment));
@@ -236,8 +233,6 @@ namespace TicketingAPI.Application.Services.Implementations
                 if (reservation != null)
                 {
                     reservation.Status = "Cancelled";
-                    if (reservation.Seat != null)
-                        reservation.Seat.Status = "Available";
                 }
             }
 
