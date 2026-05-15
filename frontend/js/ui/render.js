@@ -10,60 +10,87 @@ export function renderCatalog(
   onPageSizeChange
 ) {
   container.innerHTML = `
-  <div class="flex justify-between items-center mb-4">
-  </div>
-    <h2 class="text-2xl font-bold mb-4 text-center">
-      Eventos disponibles
-    </h2>
-
-    <div class="grid sm:grid-cols-2 gap-4 mb-6 main-panel">
-      ${events.map(e => `
-        <article
-          class="border border-slate-200 rounded-lg p-4 hover:shadow-md transition cursor-pointer event-card event-card:hover"
-          data-event-id="${e.id}"
-        >
-          <h3 class="font-semibold text-lg">${e.name}</h3>
-          <p class="text-sm text-slate-500 mt-1">📅 ${formatDateTime(e.date)}</p>
-          <p class="text-sm text-slate-500">📍 ${e.venue}</p>
-          <button class="mt-3 text-sm text-blue-600 font-medium hover:underline">
-            Elegir butacas →
-          </button>
-        </article>
-      `).join("")}
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+      <div class="flex items-center gap-3">
+        <div class="w-1 h-6 bg-blue-600"></div>
+        <h2 class="text-2xl font-bold text-slate-800">Eventos destacados</h2>
+      </div>
     </div>
-    <div class="flex justify-center items-center gap-4 mt-6">
-      <label class="text-sm text-slate-600">
-        Mostrar:
-      </label>
 
-      <select
-        id="page-size-select"
-        class="border border-slate-300 rounded-md px-2 py-1 text-sm"
-      >
-        <option value="2" ${pagination.pageSize === 2 ? "selected" : ""}>2</option>
-        <option value="5" ${pagination.pageSize === 5 ? "selected" : ""}>5</option>
-        <option value="10" ${pagination.pageSize === 10 ? "selected" : ""}>10</option>
-        <option value="20" ${pagination.pageSize === 20 ? "selected" : ""}>20</option>
-      </select>
-      <button
-        id="btn-prev-page"
-        class="px-4 py-2 rounded border disabled:opacity-50"
-        ${!pagination.hasPrevious ? "disabled" : ""}
-      >
-        ← Anterior
-      </button>
+    <!-- Cards Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-8 main-panel">
+      ${events.map((e, i) => {
+    const eventDate = new Date(e.date);
+    const day = eventDate.getDate();
+    const month = eventDate.toLocaleString('es-ES', { month: 'short' }).toUpperCase();
+    const weekday = eventDate.toLocaleString('es-ES', { weekday: 'short' }).toUpperCase();
 
-      <span class="text-sm text-slate-600">
-        Página ${pagination.page} de ${pagination.totalPages}
-      </span>
+    const palette = [
+      { block: 'bg-blue-500',    text: 'text-blue-100',    sub: 'text-blue-200',    badge: 'bg-blue-50 text-blue-600 border-blue-100',    title: 'group-hover:text-blue-600',    arrow: 'group-hover:text-blue-500',    border: 'group-hover:border-blue-300',    shadow: 'hover:shadow-blue-200/70' },
+      { block: 'bg-emerald-500', text: 'text-emerald-100', sub: 'text-emerald-200', badge: 'bg-emerald-50 text-emerald-600 border-emerald-100', title: 'group-hover:text-emerald-600', arrow: 'group-hover:text-emerald-500', border: 'group-hover:border-emerald-300', shadow: 'hover:shadow-emerald-200/70' },
+      { block: 'bg-rose-500',    text: 'text-rose-100',    sub: 'text-rose-200',    badge: 'bg-rose-50 text-rose-600 border-rose-100',    title: 'group-hover:text-rose-600',    arrow: 'group-hover:text-rose-500',    border: 'group-hover:border-rose-300',    shadow: 'hover:shadow-rose-200/70' },
+      { block: 'bg-amber-400',   text: 'text-amber-900',   sub: 'text-amber-800',   badge: 'bg-amber-50 text-amber-600 border-amber-100',   title: 'group-hover:text-amber-600',   arrow: 'group-hover:text-amber-500',   border: 'group-hover:border-amber-300',   shadow: 'hover:shadow-amber-200/70' },
+    ];
+    const c = palette[i % palette.length];
 
-      <button
-        id="btn-next-page"
-        class="px-4 py-2 rounded border disabled:opacity-50"
-        ${!pagination.hasNext ? "disabled" : ""}
-      >
-        Siguiente →
-      </button>
+    return `
+        <article class="bg-white border border-slate-200 rounded-lg overflow-hidden flex ${c.border} ${c.shadow} hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group cursor-pointer" data-event-id="${e.id}">
+          
+          <!-- Date Block (Left Column) -->
+          <div class="flex-shrink-0 w-16 ${c.block} flex flex-col items-center justify-center p-3 group-hover:scale-x-110 transition-transform duration-300 origin-left">
+            <span class="text-[10px] font-bold ${c.sub} uppercase tracking-widest">${weekday}</span>
+            <span class="text-2xl font-black ${c.text} leading-none">${day}</span>
+            <span class="text-[10px] font-bold ${c.sub} uppercase">${month}</span>
+          </div>
+
+          <!-- Card Body (Right Column) -->
+          <div class="p-4 flex flex-col flex-1 min-w-0">
+            <!-- Category -->
+            <span class="inline-block px-2 py-0.5 border text-[10px] font-bold rounded uppercase tracking-wider mb-2 self-start ${c.badge}">Evento</span>
+
+            <!-- Title -->
+            <h3 class="font-bold text-sm text-slate-800 mb-2 leading-snug line-clamp-2 flex-1 ${c.title} transition-colors duration-300">${e.name}</h3>
+
+            <!-- Venue -->
+            <div class="flex items-center gap-1 text-[11px] text-slate-400 font-medium mt-auto">
+              <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+              <span class="truncate">${e.venue}</span>
+            </div>
+          </div>
+
+          <!-- Arrow Indicator (Right) -->
+          <div class="flex-shrink-0 flex items-center pr-3 text-slate-300 ${c.arrow} transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+          </div>
+        </article>
+      `}).join("")}
+    </div>
+    <!-- Pagination -->
+    <div class="flex flex-wrap justify-between items-center gap-4 pt-4 border-t border-slate-100">
+      <div class="flex items-center gap-2">
+        <label class="text-sm text-slate-600">Mostrar:</label>
+        <select id="page-size-select" class="border border-slate-300 bg-white rounded px-3 py-1.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="2" ${pagination.pageSize === 2 ? "selected" : ""}>2</option>
+          <option value="4" ${pagination.pageSize === 4 ? "selected" : ""}>4</option>
+          <option value="6" ${pagination.pageSize === 6 ? "selected" : ""}>6</option>
+          <option value="8" ${pagination.pageSize === 8 ? "selected" : ""}>8</option>
+          <option value="10" ${pagination.pageSize === 10 ? "selected" : ""}>10</option>
+          <option value="20" ${pagination.pageSize === 20 ? "selected" : ""}>20</option>
+        </select>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button id="btn-prev-page" class="px-4 py-2 rounded border border-slate-200 bg-white text-slate-700 text-sm font-medium disabled:opacity-50 disabled:bg-slate-50 hover:bg-slate-50 transition-colors" ${!pagination.hasPrevious ? "disabled" : ""}>
+          ← Anterior
+        </button>
+        <span class="text-sm text-slate-600 font-medium px-2">
+          Página ${pagination.page} de ${pagination.totalPages}
+        </span>
+        <button id="btn-next-page" class="px-4 py-2 rounded border border-slate-200 bg-white text-slate-700 text-sm font-medium disabled:opacity-50 disabled:bg-slate-50 hover:bg-slate-50 transition-colors" ${!pagination.hasNext ? "disabled" : ""}>
+          Siguiente →
+        </button>
+      </div>
     </div>
   `;
 
@@ -167,10 +194,10 @@ function renderSector(sector, selected) {
       colsHtml.push(`
         <button
           class="${seatStatusClass(
-            seat,
-            isSelected,
-            sector.position === "vip"
-          )}"
+        seat,
+        isSelected,
+        sector.position === "vip"
+      )}"
           data-seat-id="${seat.id}"
           aria-label="${sector.name} fila ${seat.row} asiento ${seat.number}"
           ${status !== "available" && !isSelected && !isMine ? "disabled" : ""}
@@ -192,7 +219,7 @@ function renderSector(sector, selected) {
       <div class="sector-label mb-2">
         ${sector.name} · $${sector.price}
       </div>
-      <div class="${isVertical ? "flex gap-1" : "seat-grid"}">
+      <div class="${isVertical ? "flex justify-center gap-1" : "seat-grid"}">
         ${rowsHtml.join("")}
       </div>
     </div>
@@ -216,15 +243,27 @@ export function renderStadium(container, eventState, selected, onSeatClick) {
     sectorsByPosition[sector.position].push(sector);
   }
 
+  function getGridStyles(pos) {
+    switch (pos) {
+      case 'vip': return "grid-column: 2; grid-row: 2;";
+      case 'front': return "grid-column: 2; grid-row: 3;";
+      case 'left': return "grid-column: 1; grid-row: 4;";
+      case 'center': return "grid-column: 2; grid-row: 4;";
+      case 'right': return "grid-column: 3; grid-row: 4;";
+      case 'back': return "grid-column: 2; grid-row: 5;";
+      default: return "grid-column: 1 / 4;";
+    }
+  }
+
   container.innerHTML = `
     <div class="map-grid max-w-6xl mx-auto">
-      <div class="stage" style="grid-column: 1 / 4;">
+      <div class="stage" style="grid-column: 1 / 4; grid-row: 1;">
         🎤 ESCENARIO
       </div>
 
       ${Object.entries(sectorsByPosition).map(([pos, sectors]) =>
         sectors.map(sector => `
-          <div style="grid-column: 1 / 4;">
+          <div style="${getGridStyles(pos)}">
             ${renderSector(sector, selected)}
           </div>
         `).join("")
