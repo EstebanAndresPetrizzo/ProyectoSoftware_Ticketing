@@ -123,9 +123,7 @@ async function boot() {
   }
 
   initCarousel();
-  document.querySelectorAll(".btn-carousel-action").forEach(btn => {
-    btn.addEventListener("click", openModal);
-  });
+
 
   const catalogContainer = $("view-catalog");
   if (catalogContainer) {
