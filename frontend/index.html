@@ -12,28 +12,165 @@
 </head>
 
 <body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
-  <header class="bg-gradient-to-r from-slate-900 to-blue-700 text-white py-6">
-    <div class="max-w-lg mx-auto px-4 text-center">
-      <h1 class="text-2xl font-bold" data-app-title>🎫 TicketingApp</h1>
-      <p class="text-slate-200 text-sm mt-1">Entra con Google o, en entorno de prueba Docker, con el modo sin Google.</p>
+  <header class="bg-gradient-to-r from-slate-900 to-blue-700 text-white shadow-md">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
+      <!-- Logo -->
+      <a href="index.html" class="flex items-center gap-2 shrink-0">
+        <div class="flex items-center gap-0.5">
+          <div class="w-2.5 h-2.5 rounded-sm bg-white/90"></div>
+          <div class="w-2.5 h-2.5 rounded-sm bg-white/70"></div>
+          <div class="w-2.5 h-2.5 rounded-sm bg-white/50"></div>
+          <div class="w-2.5 h-2.5 rounded-sm bg-white/30"></div>
+        </div>
+        <span class="font-black text-xl tracking-tight text-white">Ticketing</span>
+      </a>
+      <div class="flex items-center gap-3">
+        <button id="btn-login-header"
+          class="rounded bg-white px-5 py-1.5 text-sm font-bold text-blue-600 hover:bg-slate-50 transition-colors shadow-sm hover:shadow">
+          Ingresar
+        </button>
+      </div>
     </div>
   </header>
 
-  <main class="flex-1 flex items-center justify-center p-6">
-    <div class="w-full max-w-md bg-white rounded-xl shadow-sm border border-slate-200 p-8 text-center">
-      <h2 class="text-lg font-semibold text-slate-800 mb-2">Iniciar sesión</h2>
-      <p id="login-google-hint" class="text-sm text-slate-500 mb-6">Con Google no guardamos contraseñas en esta app.</p>
+  <!-- Login Modal Overlay -->
+  <div id="login-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-200 p-8 text-center relative">
+      <button id="btn-close-modal" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+      <div class="flex justify-center mb-6">
+        <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center text-blue-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+        </div>
+      </div>
+      <h2 class="text-xl font-bold text-slate-800 mb-2">Iniciar sesión</h2>
+      <p id="login-google-hint" class="text-sm text-slate-500 mb-8">Con Google no guardamos contraseñas en esta app. Ingresá rápido y seguro.</p>
       <div id="google-signin" class="flex justify-center"></div>
-      <div id="dev-login-wrap" class="hidden mt-2"></div>
-      <p id="login-status" class="hidden mt-4 text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg p-3"></p>
+      <div id="dev-login-wrap" class="hidden mt-4"></div>
+      <p id="login-status"
+        class="hidden mt-4 text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg p-3"></p>
+    </div>
+  </div>
+
+  <main class="flex-1 max-w-6xl w-full mx-auto p-4 flex flex-col gap-6">
+    <!-- Hero Carousel -->
+    <div id="hero-carousel" class="relative w-full bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+      <!-- Floating background circles -->
+      <div class="absolute top-10 left-10 w-24 h-24 bg-blue-100 rounded-full mix-blend-multiply filter blur-xl opacity-50 animate-blob"></div>
+      <div class="absolute top-0 right-32 w-32 h-32 bg-yellow-100 rounded-full mix-blend-multiply filter blur-xl opacity-50 animate-blob animation-delay-2000"></div>
+      <div class="absolute -bottom-8 left-1/3 w-28 h-28 bg-green-100 rounded-full mix-blend-multiply filter blur-xl opacity-50 animate-blob animation-delay-4000"></div>
+
+      <!-- Carousel Track -->
+      <div id="carousel-track" class="flex transition-transform duration-700 ease-out h-[280px] md:h-[360px]" style="width: 300%; transform: translateX(0%);">
+        
+        <!-- Slide 1 -->
+        <div class="w-1/3 flex-shrink-0 flex flex-col md:flex-row items-center p-8 md:p-12 gap-8 relative z-10">
+          <div class="flex-1 space-y-5">
+            <span class="inline-block px-3 py-1 bg-blue-50 text-blue-600 text-xs font-bold tracking-wider rounded-full uppercase">Novedad</span>
+            <h2 class="text-3xl md:text-5xl font-black text-slate-900 leading-tight">Encontrá los mejores shows en vivo</h2>
+            <p class="text-slate-500 text-base md:text-lg">Explorá nuestro catálogo interactivo y no te pierdas a tus artistas favoritos.</p>
+            <div class="flex gap-4 pt-2">
+              <button class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full transition-colors shadow-sm btn-carousel-action">Ver eventos</button>
+            </div>
+          </div>
+          <div class="flex-1 w-full aspect-[16/9] md:aspect-[4/3] bg-slate-100 rounded-2xl flex items-center justify-center overflow-hidden border border-slate-200">
+            <div class="w-full h-full bg-gradient-to-tr from-blue-50 to-emerald-50 flex items-center justify-center">
+              <svg class="w-16 h-16 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slide 2 -->
+        <div class="w-1/3 flex-shrink-0 flex flex-col md:flex-row items-center p-8 md:p-12 gap-8 relative z-10">
+          <div class="flex-1 space-y-5">
+            <span class="inline-block px-3 py-1 bg-emerald-50 text-emerald-600 text-xs font-bold tracking-wider rounded-full uppercase">Interactivo</span>
+            <h2 class="text-3xl md:text-5xl font-black text-slate-900 leading-tight">Elegí tu lugar exacto</h2>
+            <p class="text-slate-500 text-base md:text-lg">Seleccioná tu butaca en nuestro mapa interactivo en tiempo real y asegúrala por 5 minutos.</p>
+            <div class="flex gap-4 pt-2">
+              <button class="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-full transition-colors shadow-sm btn-carousel-action">Probar mapa</button>
+            </div>
+          </div>
+          <div class="flex-1 w-full aspect-[16/9] md:aspect-[4/3] bg-slate-100 rounded-2xl flex items-center justify-center overflow-hidden border border-slate-200">
+            <div class="w-full h-full bg-gradient-to-tr from-emerald-50 to-amber-50 flex items-center justify-center">
+              <svg class="w-16 h-16 text-emerald-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slide 3 -->
+        <div class="w-1/3 flex-shrink-0 flex flex-col md:flex-row items-center p-8 md:p-12 gap-8 relative z-10">
+          <div class="flex-1 space-y-5">
+            <span class="inline-block px-3 py-1 bg-amber-50 text-amber-600 text-xs font-bold tracking-wider rounded-full uppercase">Seguro</span>
+            <h2 class="text-3xl md:text-5xl font-black text-slate-900 leading-tight">Compra rápida y sin sorpresas</h2>
+            <p class="text-slate-500 text-base md:text-lg">Tu entrada asegurada en tu cuenta al instante tras completar el pago seguro.</p>
+            <div class="flex gap-4 pt-2">
+              <button class="px-5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-semibold rounded-full transition-colors shadow-sm btn-carousel-action">Ingresar</button>
+            </div>
+          </div>
+          <div class="flex-1 w-full aspect-[16/9] md:aspect-[4/3] bg-slate-100 rounded-2xl flex items-center justify-center overflow-hidden border border-slate-200">
+            <div class="w-full h-full bg-gradient-to-tr from-amber-50 to-rose-50 flex items-center justify-center">
+              <svg class="w-16 h-16 text-amber-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.956 11.956 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Controls -->
+      <button id="carousel-prev" class="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-50 shadow-sm transition z-20">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+      </button>
+      <button id="carousel-next" class="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-50 shadow-sm transition z-20">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+      </button>
+
+      <!-- Dots -->
+      <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20" id="carousel-dots">
+        <button class="w-6 h-2 rounded-full bg-blue-600 transition-colors" data-slide="0"></button>
+        <button class="w-2 h-2 rounded-full bg-slate-300 hover:bg-slate-400 transition-colors" data-slide="1"></button>
+        <button class="w-2 h-2 rounded-full bg-slate-300 hover:bg-slate-400 transition-colors" data-slide="2"></button>
+      </div>
+    </div>
+
+    <!-- Catalog View (Public) -->
+    <div class="w-full">
+      <section class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+        <div id="view-catalog"></div>
+      </section>
     </div>
   </main>
 
-  <footer class="mt-auto py-6 text-center text-sm text-slate-500">
-    <p id="app-footer-contact" class="px-4"></p>
+  <!-- Compact Footer -->
+  <footer class="bg-slate-900 text-slate-400 py-6 mt-auto border-t border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-6">
+      
+      <!-- Logo & Copyright -->
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-0.5 opacity-80">
+          <div class="w-1.5 h-1.5 rounded-sm bg-white/90"></div>
+          <div class="w-1.5 h-1.5 rounded-sm bg-white/70"></div>
+          <div class="w-1.5 h-1.5 rounded-sm bg-white/50"></div>
+          <div class="w-1.5 h-1.5 rounded-sm bg-white/30"></div>
+        </div>
+        <span class="font-bold text-sm tracking-tight text-white/90">Ticketing</span>
+        <span class="text-slate-600 text-sm hidden sm:inline">|</span>
+        <span class="text-xs">© 2026 Todos los derechos reservados</span>
+      </div>
+
+      <!-- Contacto -->
+      <div class="flex items-center gap-4 text-xs">
+        <span class="text-slate-500 font-medium">Desarrollado por:</span>
+        <div class="flex items-center gap-3">
+          <span class="text-slate-300">Esteban Petrizzo <span class="px-1.5 py-0.5 rounded bg-slate-800 text-[10px] text-slate-400 ml-1">Dev</span></span>
+          <span class="text-slate-300">Diego Montaño <span class="px-1.5 py-0.5 rounded bg-slate-800 text-[10px] text-slate-400 ml-1">Dev</span></span>
+        </div>
+      </div>
+
+    </div>
   </footer>
 
-  <script type="module" src="js/login.js"></script>
+  <script type="module" src="js/login.js?v=3"></script>
 </body>
 
 </html>

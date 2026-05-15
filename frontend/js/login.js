@@ -2,6 +2,9 @@ import { GOOGLE_CLIENT_ID } from "./auth-config.js";
 import { saveSession, getSession, parseIdTokenPayload } from "./auth-session.js";
 import { api, getAuthPublicConfig, devLogin } from "./api/api.js";
 import { applyAppBranding } from "./app-branding.js";
+import { showToast } from "./ui/toast.js";
+import { initCarousel } from "./ui/carousel.js";
+import { renderCatalog } from "./ui/render.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -19,9 +22,7 @@ function waitForGoogle(callback) {
 }
 
 function showStatus(text) {
-  const el = $("login-status");
-  el.textContent = text;
-  el.classList.remove("hidden");
+  showToast(text, "error");
 }
 
 function setupDevLoginButton() {
@@ -93,11 +94,67 @@ function initGoogleButton(clientId) {
 }
 
 async function boot() {
-  await applyAppBranding("Iniciar sesión");
+  await applyAppBranding("Inicio");
 
   if (getSession()) {
     window.location.replace("app.html");
     return;
+  }
+
+  // Modal Logic
+  const modal = $("login-modal");
+  const btnHeader = $("btn-login-header");
+  const btnClose = $("btn-close-modal");
+
+  function openModal() {
+    modal.classList.remove("hidden");
+  }
+
+  function closeModal() {
+    modal.classList.add("hidden");
+  }
+
+  if (btnHeader) btnHeader.addEventListener("click", openModal);
+  if (btnClose) btnClose.addEventListener("click", closeModal);
+  if (modal) {
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) closeModal();
+    });
+  }
+
+  initCarousel();
+  document.querySelectorAll(".btn-carousel-action").forEach(btn => {
+    btn.addEventListener("click", openModal);
+  });
+
+  const catalogContainer = $("view-catalog");
+  if (catalogContainer) {
+    const publicState = { page: 1, pageSize: 10 };
+
+    async function loadPublicCatalog() {
+      try {
+        const result = await api.listEvents(publicState.page, publicState.pageSize);
+        renderCatalog(
+          catalogContainer,
+          result.events,
+          openModal,
+          result.pagination,
+          async (newPage) => {
+            publicState.page = newPage;
+            await loadPublicCatalog();
+          },
+          async (newSize) => {
+            publicState.pageSize = Number(newSize);
+            publicState.page = 1;
+            await loadPublicCatalog();
+          }
+        );
+      } catch (e) {
+        console.error("Error loading public catalog", e);
+      }
+    }
+
+    await loadPublicCatalog();
   }
 
   const localId = (GOOGLE_CLIENT_ID || "").trim();
@@ -108,7 +165,7 @@ async function boot() {
   if (!clientId && !devOk) {
     showStatus(
       "No hay forma de iniciar sesión: configura GOOGLE_CLIENT_ID en .env o en la API, " +
-        "o habilita Ticketing:EnableDockerDevLogin en Development."
+      "o habilita Ticketing:EnableDockerDevLogin en Development."
     );
     return;
   }
