@@ -32,13 +32,10 @@ namespace TicketingAPI.Application.Services.Implementations
             try
             {
                 var isTaken = await _unitOfWork.Reservations.AnyActiveReservationAsync(seat.Id, request.EventId);
-                if (isTaken || !string.Equals(seat.Status, "Available", StringComparison.OrdinalIgnoreCase))
+                if (isTaken)
                 {
-                    throw new InvalidOperationException("El asiento ya no está disponible o tiene una reserva pendiente.");
+                    throw new InvalidOperationException("El asiento ya tiene una reserva activa o está comprado.");
                 }
-
-                seat.Status = "Reserved";
-                await _unitOfWork.Seats.UpdateSeatAsync(seat);
 
                 var reservation = new Reservation
                 {
@@ -130,8 +127,7 @@ namespace TicketingAPI.Application.Services.Implementations
                 }
 
                 reservation.Status = "Cancelled";
-                seat.Status = "Available";
-                await _unitOfWork.Seats.UpdateSeatAsync(seat);
+                // seat.Status ya no se modifica a nivel global
 
                 var evt = await _unitOfWork.Events.GetEventByIdAsync(request.EventId);
                 var sectorName = evt?.Venue?.Sectors.FirstOrDefault(s => s.Id == request.SectorId)?.Name ?? request.SectorId.ToString();
