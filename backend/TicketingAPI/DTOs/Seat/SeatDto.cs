@@ -37,6 +37,7 @@ namespace ProyectoSoftware_Ticketing.DTOs.Seat
 
         /// <summary>
         /// Si <see cref="IsMine"/> y la reserva está pendiente, fecha UTC de expiración del bloqueo.
+        /// </summary>
         public DateTime? MyPendingExpiresAtUtc { get; set; }
 
         /// <summary>

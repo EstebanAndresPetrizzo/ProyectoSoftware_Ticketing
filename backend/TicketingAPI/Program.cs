@@ -18,7 +18,7 @@ builder.Services.AddControllers()
             new JsonStringEnumConverter()
         );
     });
-// Generador nativo de .NET 10 — forzamos OpenAPI 3.0 para compatibilidad con Swagger UI
+// Generador nativo de .NET 10 — incluye comentarios XML automáticamente
 builder.Services.AddOpenApi(options =>
 {
     options.OpenApiVersion = Microsoft.OpenApi.OpenApiSpecVersion.OpenApi3_0;
