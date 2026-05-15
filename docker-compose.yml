@@ -4,9 +4,9 @@ services:
     container_name: ticketing-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ticketing
+      POSTGRES_USER: ticketing_user
+      POSTGRES_PASSWORD: ticketing_pass
     ports:
       - "5432:5432"
     volumes:
@@ -20,12 +20,12 @@ services:
     depends_on:
       - postgres
     environment:
-      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database="ticketing";Username="ticketing_user";Password="ticketing_pass"
       ASPNETCORE_ENVIRONMENT: Development
       # Login de prueba sin Google (botón en la pantalla de login). Desactiva en producción.
       Ticketing__EnableDockerDevLogin: "true"
       # Opcional: Client ID OAuth de Google. Copia desde .env (ver .env).
-      Authentication__Google__ClientId: ${GOOGLE_CLIENT_ID}
+      Authentication__Google__ClientId: 1046346495617-n4eheruoh5e8cl43krcqquqg8sm0kc4l.apps.googleusercontent.com
       App__Name: "TicketingApp"
       App__ContactEmail: "petrizzoesteban@gmail.com"
     ports:
