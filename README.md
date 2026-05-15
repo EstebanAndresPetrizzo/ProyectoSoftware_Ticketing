@@ -95,6 +95,16 @@ http://localhost:3000
 http://localhost:5000
 ```
 
+### Documentación Swagger
+
+La documentación interactiva de la API está disponible en:
+
+```
+http://localhost:5000/swagger
+```
+
+Aquí puedes explorar todos los endpoints, ver ejemplos de solicitudes y respuestas, y probar la API directamente desde el navegador.
+
 ---
 
 ## 🔌 API Endpoints

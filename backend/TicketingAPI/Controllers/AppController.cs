@@ -17,6 +17,9 @@ public class AppController : ControllerBase
         _branding = branding.Value;
     }
 
+    /// <summary>
+    /// Obtiene la información de branding de la aplicación, como nombre y email de contacto.
+    /// </summary>
     [HttpGet("branding")]
     public ActionResult<ApiResponse<AppBrandingDto>> GetBranding()
     {

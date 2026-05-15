@@ -46,6 +46,9 @@ namespace TicketingAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Cancela una reserva existente, liberando el asiento y registrando la auditoría.
+        /// </summary>
         [HttpDelete]
         public async Task<ActionResult<ApiResponse<object?>>> CancelReservation(
             [FromBody] CreateReservationRequestDto request,
