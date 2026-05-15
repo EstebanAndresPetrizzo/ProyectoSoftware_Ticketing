@@ -72,6 +72,24 @@ export const api = {
     );
 
     const json = await res.json();
+    
+    // Si el backend devuelve info de paginación, la usamos. Si no, calculamos algo básico.
+    const p = json.pagination;
+    const pagination = p ? {
+      page: p.page ?? p.Page,
+      pageSize: p.pageSize ?? p.PageSize,
+      totalItems: p.totalItems ?? p.TotalItems,
+      totalPages: p.totalPages ?? p.TotalPages,
+      hasNext: p.hasNext ?? p.HasNext,
+      hasPrevious: p.hasPrevious ?? p.HasPrevious
+    } : {
+      page,
+      pageSize,
+      totalItems: json.data.length === pageSize ? (page + 1) * pageSize : json.data.length,
+      totalPages: json.data.length === pageSize ? page + 1 : Math.max(1, page),
+      hasNext: json.data.length === pageSize,
+      hasPrevious: page > 1
+    };
 
     return {
       events: json.data.map(event => ({
@@ -80,19 +98,7 @@ export const api = {
         date: event.date,
         venue: event.venue
       })),
-
-      pagination: {
-        page,
-        pageSize,
-        totalItems: json.data.length === pageSize
-          ? (page + 1) * pageSize
-          : json.data.length,
-        totalPages: json.data.length === pageSize
-          ? page + 1
-          : Math.max(1, page),
-        hasNext: json.data.length === pageSize,
-        hasPrevious: page > 1
-      }
+      pagination
     };
   },
 

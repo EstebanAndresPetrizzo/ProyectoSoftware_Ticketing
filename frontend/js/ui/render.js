@@ -27,10 +27,10 @@ export function renderCatalog(
     const weekday = eventDate.toLocaleString('es-ES', { weekday: 'short' }).toUpperCase();
 
     const palette = [
-      { block: 'bg-blue-500',    text: 'text-blue-100',    sub: 'text-blue-200',    badge: 'bg-blue-50 text-blue-600 border-blue-100',    title: 'group-hover:text-blue-600',    arrow: 'group-hover:text-blue-500',    border: 'group-hover:border-blue-300',    shadow: 'hover:shadow-blue-200/70' },
+      { block: 'bg-blue-500', text: 'text-blue-100', sub: 'text-blue-200', badge: 'bg-blue-50 text-blue-600 border-blue-100', title: 'group-hover:text-blue-600', arrow: 'group-hover:text-blue-500', border: 'group-hover:border-blue-300', shadow: 'hover:shadow-blue-200/70' },
       { block: 'bg-emerald-500', text: 'text-emerald-100', sub: 'text-emerald-200', badge: 'bg-emerald-50 text-emerald-600 border-emerald-100', title: 'group-hover:text-emerald-600', arrow: 'group-hover:text-emerald-500', border: 'group-hover:border-emerald-300', shadow: 'hover:shadow-emerald-200/70' },
-      { block: 'bg-rose-500',    text: 'text-rose-100',    sub: 'text-rose-200',    badge: 'bg-rose-50 text-rose-600 border-rose-100',    title: 'group-hover:text-rose-600',    arrow: 'group-hover:text-rose-500',    border: 'group-hover:border-rose-300',    shadow: 'hover:shadow-rose-200/70' },
-      { block: 'bg-amber-400',   text: 'text-amber-900',   sub: 'text-amber-800',   badge: 'bg-amber-50 text-amber-600 border-amber-100',   title: 'group-hover:text-amber-600',   arrow: 'group-hover:text-amber-500',   border: 'group-hover:border-amber-300',   shadow: 'hover:shadow-amber-200/70' },
+      { block: 'bg-rose-500', text: 'text-rose-100', sub: 'text-rose-200', badge: 'bg-rose-50 text-rose-600 border-rose-100', title: 'group-hover:text-rose-600', arrow: 'group-hover:text-rose-500', border: 'group-hover:border-rose-300', shadow: 'hover:shadow-rose-200/70' },
+      { block: 'bg-amber-400', text: 'text-amber-900', sub: 'text-amber-800', badge: 'bg-amber-50 text-amber-600 border-amber-100', title: 'group-hover:text-amber-600', arrow: 'group-hover:text-amber-500', border: 'group-hover:border-amber-300', shadow: 'hover:shadow-amber-200/70' },
     ];
     const c = palette[i % palette.length];
 
@@ -67,28 +67,48 @@ export function renderCatalog(
       `}).join("")}
     </div>
     <!-- Pagination -->
-    <div class="flex flex-wrap justify-between items-center gap-4 pt-4 border-t border-slate-100">
-      <div class="flex items-center gap-2">
-        <label class="text-sm text-slate-600">Mostrar:</label>
-        <select id="page-size-select" class="border border-slate-300 bg-white rounded px-3 py-1.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-          <option value="2" ${pagination.pageSize === 2 ? "selected" : ""}>2</option>
-          <option value="4" ${pagination.pageSize === 4 ? "selected" : ""}>4</option>
-          <option value="6" ${pagination.pageSize === 6 ? "selected" : ""}>6</option>
-          <option value="8" ${pagination.pageSize === 8 ? "selected" : ""}>8</option>
-          <option value="10" ${pagination.pageSize === 10 ? "selected" : ""}>10</option>
-          <option value="20" ${pagination.pageSize === 20 ? "selected" : ""}>20</option>
-        </select>
+    <div class="flex flex-wrap justify-between items-center gap-6 pt-6 border-t border-slate-100">
+      <!-- Selector de Tamaño -->
+      <div class="flex items-center gap-3">
+        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Mostrar</span>
+        <div class="relative">
+          <select id="page-size-select" class="appearance-none bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-lg pl-4 pr-10 py-2 hover:border-slate-300 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all cursor-pointer shadow-sm">
+            <option value="1" ${pagination.pageSize === 1 ? "selected" : ""}>1 Eventos</option>
+            <option value="3" ${pagination.pageSize === 3 ? "selected" : ""}>3 Eventos</option>
+            <option value="6" ${pagination.pageSize === 6 ? "selected" : ""}>6 Eventos</option>
+            <option value="9" ${pagination.pageSize === 9 ? "selected" : ""}>9 Eventos</option>
+            <option value="10" ${pagination.pageSize === 10 ? "selected" : ""}>10 Eventos</option>
+            <option value="20" ${pagination.pageSize === 20 ? "selected" : ""}>20 Eventos</option>
+          </select>
+          <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-400">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
+          </div>
+        </div>
       </div>
 
-      <div class="flex items-center gap-3">
-        <button id="btn-prev-page" class="px-4 py-2 rounded border border-slate-200 bg-white text-slate-700 text-sm font-medium disabled:opacity-50 disabled:bg-slate-50 hover:bg-slate-50 transition-colors" ${!pagination.hasPrevious ? "disabled" : ""}>
-          ← Anterior
+      <!-- Controles de Paginación -->
+      <div class="flex items-center gap-2">
+        <button id="btn-prev-page" 
+          class="p-2 rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 disabled:opacity-30 disabled:bg-slate-50 disabled:text-slate-400 disabled:border-slate-200 transition-all duration-200 shadow-sm hover:shadow" 
+          ${!pagination.hasPrevious ? "disabled" : ""}
+          aria-label="Página anterior">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
         </button>
-        <span class="text-sm text-slate-600 font-medium px-2">
-          Página ${pagination.page} de ${pagination.totalPages}
-        </span>
-        <button id="btn-next-page" class="px-4 py-2 rounded border border-slate-200 bg-white text-slate-700 text-sm font-medium disabled:opacity-50 disabled:bg-slate-50 hover:bg-slate-50 transition-colors" ${!pagination.hasNext ? "disabled" : ""}>
-          Siguiente →
+        
+        <div class="flex items-center px-4 py-2 bg-slate-100/50 rounded-lg border border-slate-200 shadow-sm">
+          <span class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mr-3">Página</span>
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-black text-blue-600">${pagination.page}</span>
+            <span class="text-xs font-bold text-slate-300 uppercase">de</span>
+            <span class="text-sm font-bold text-slate-500">${pagination.totalPages}</span>
+          </div>
+        </div>
+
+        <button id="btn-next-page" 
+          class="p-2 rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 disabled:opacity-30 disabled:bg-slate-50 disabled:text-slate-400 disabled:border-slate-200 transition-all duration-200 shadow-sm hover:shadow" 
+          ${!pagination.hasNext ? "disabled" : ""}
+          aria-label="Siguiente página">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
         </button>
       </div>
     </div>
@@ -262,12 +282,12 @@ export function renderStadium(container, eventState, selected, onSeatClick) {
       </div>
 
       ${Object.entries(sectorsByPosition).map(([pos, sectors]) =>
-        sectors.map(sector => `
+    sectors.map(sector => `
           <div style="${getGridStyles(pos)}">
             ${renderSector(sector, selected)}
           </div>
         `).join("")
-      ).join("")}
+  ).join("")}
     </div>
   `;
 }

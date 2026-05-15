@@ -309,7 +309,7 @@ function updateCountdown() {
 
 async function confirmPurchase() {
   if (state.selected.length === 0) {
-    alert("⚠️ No has seleccionado ninguna butaca");
+    showToast("No has seleccionado ninguna butaca", "warning");
     return;
   }
 
@@ -339,12 +339,12 @@ async function confirmPurchase() {
     };
 
     paymentModal.onPaymentSuccess = async (paymentResult) => {
-      alert(`✓ ¡Pago completado!\nID de Pago: ${paymentResult.transactionId || paymentResult.id}`);
+      showToast(`¡Pago completado! ID de Pago: ${paymentResult.transactionId || paymentResult.id}`, "success");
       await backToCatalog();
     };
 
     paymentModal.onPaymentError = async () => {
-      alert("✕ El pago fue rechazado. Intenta de nuevo o selecciona otro método.");
+      showToast("El pago fue rechazado. Intenta de nuevo o selecciona otro método.", "error");
     };
 
     paymentModal.open(reservationData);
