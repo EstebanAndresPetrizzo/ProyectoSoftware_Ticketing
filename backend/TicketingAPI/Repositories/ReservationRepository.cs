@@ -26,10 +26,31 @@ namespace TicketingAPI.Repositories
         {
             await _context.Reservations.AddAsync(reservation);
         }
+
+        /// <summary>
+        /// Obtiene una reserva por su ID.
+        /// </summary>
+        public async Task<Reservation?> GetByIdAsync(Guid id)
+        {
+            return await _context.Reservations
+                .Include(r => r.Seat)
+                .Include(r => r.Event)
+                .FirstOrDefaultAsync(r => r.Id == id);
+        }
+
+        /// <summary>
+        /// Actualiza una reserva existente.
+        /// </summary>
+        public async Task UpdateAsync(Reservation reservation)
+        {
+            _context.Reservations.Update(reservation);
+            await Task.CompletedTask;
+        }
+
         /// <summary>
         /// Verifica si existe alguna reserva activa (pagada o pendiente no expirada) para una butaca y evento específicos.
         /// Esto se utiliza para validar la disponibilidad real de una butaca antes de crear una nueva reserva.
-        /// </summary> 
+        /// </summary>
 
         public async Task<bool> AnyActiveReservationAsync(int seatId, int eventId)
         {

@@ -131,11 +131,13 @@ function normalizeSeatStatus(status) {
       case 0: return "available";
       case 1: return "reserved";
       case 2: return "sold";
+      case 3: return "purchased";
       default: return "available";
     }
   }
 
-  return String(status).toLowerCase();
+  const statusStr = String(status).toLowerCase();
+  return statusStr === "purchased" ? "purchased" : statusStr;
 }
 
 function seatStatusClass(seat, isSelected, isVip) {
@@ -159,6 +161,7 @@ function seatIcon(seat, isSelected) {
     case "available": return "✓";
     case "reserved": return "⏱";
     case "sold": return "✕";
+    case "purchased": return "💳";
     default: return "";
   }
 }
